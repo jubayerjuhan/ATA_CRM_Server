@@ -10,7 +10,7 @@ import {
 const router: Router = Router();
 
 // Define the routes
-router.route("/signup").post(signUpUser);
+router.route("/register").post(signUpUser);
 router.route("/login").post(loginUser);
 router.route("/forgot-password").post(forgotPassword);
 router.route("/reset-password/:resetToken").post(resetPassword);
