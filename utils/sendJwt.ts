@@ -12,6 +12,12 @@ export const sendJwt = (
   res.status(type === "signup" ? 201 : 200).json({
     success: true,
     token,
+    user: {
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+    },
     message,
   });
 };

@@ -7,7 +7,7 @@ import bodyParser from "body-parser";
 import { connectDatabase } from "./config/database";
 
 // routes import
-import { authRoutes } from "./routes";
+import { authRoutes, userRoutes } from "./routes";
 
 // Error catcher middleware import
 import { errorCatcher } from "./utils/errorCatcher";
@@ -35,6 +35,7 @@ app.get("/", (req: Request, res: Response) => {
 });
 
 app.use("/auth", authRoutes);
+app.use("/user", userRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 4000;

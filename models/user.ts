@@ -11,6 +11,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password: string;
+  role: "agent" | "admin";
   resetPasswordToken: String | null;
   resetPasswordExpires: Date | null;
   createdAt: Date;
@@ -41,6 +42,13 @@ const userSchema = new Schema<IUser>({
     minlength: [8, "Password must be at least 8 characters long"],
     select: false,
   },
+
+  role: {
+    type: String,
+    enum: ["agent", "admin"],
+    default: "agent",
+  },
+
   resetPasswordToken: String,
   resetPasswordExpires: Date,
   createdAt: {

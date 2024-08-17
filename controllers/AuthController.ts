@@ -48,7 +48,7 @@ export const loginUser = async (
     if (!email || !password)
       throw new ErrorThrower(404, "Please Enter Email and Password");
 
-    const user = await User.findOne({ email }).select("password name");
+    const user = await User.findOne({ email }).select("+password");
 
     console.log(user, "user");
 
