@@ -14,6 +14,6 @@ const FormFieldSchema: Schema = new Schema({
   required: { type: Boolean, default: false },
 });
 
-const FormField = mongoose.model<IField>("Field", FormFieldSchema);
+const FormField = mongoose.model<IField>("FormField", FormFieldSchema);
 
 export default FormField;
