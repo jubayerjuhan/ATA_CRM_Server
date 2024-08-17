@@ -9,8 +9,8 @@ import {
 const router: Router = Router();
 
 // Define the routes
-router.route("/add-field").post(addFormField);
-router.route("/edit-field").put(editFormField);
-router.route("/delete-field/:id").delete(deleteFormField);
+router.route("/").post(addFormField);
+router.route("/:id").put(editFormField);
+router.route("/:id").delete(deleteFormField);
 
 export default router;

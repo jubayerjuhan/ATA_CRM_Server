@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 
-import FormField from "../models/formFields";
+import FormField from "../models/formField";
 
 export const addFormField = async (req: Request, res: Response) => {
   try {
@@ -19,7 +19,8 @@ export const addFormField = async (req: Request, res: Response) => {
 
 export const editFormField = async (req: Request, res: Response) => {
   try {
-    const { id, name, type, label, required } = req.body;
+    const { id } = req.params;
+    const { name, type, label, required } = req.body;
 
     const updatedField = await FormField.findByIdAndUpdate(
       id,
