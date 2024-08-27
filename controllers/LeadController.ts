@@ -70,7 +70,7 @@ export const getLeadById = async (req: Request, res: Response) => {
   try {
     const leadId = req.params.id;
 
-    const lead = await Lead.findById(leadId);
+    const lead = await Lead.findById(leadId).populate("claimed_by");
 
     if (!lead) {
       return res.status(404).json({ message: "Lead not found" });
