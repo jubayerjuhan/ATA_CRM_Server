@@ -17,6 +17,19 @@ export const addFormField = async (req: Request, res: Response) => {
   }
 };
 
+export const getAllFormFields = async (req: Request, res: Response) => {
+  try {
+    const formFields = await FormField.find();
+
+    res.status(200).json({
+      message: "Successfully retrieved form fields",
+      formFields,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to retrieve form fields", error });
+  }
+};
+
 export const editFormField = async (req: Request, res: Response) => {
   try {
     const { id } = req.params;

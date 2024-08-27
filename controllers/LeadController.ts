@@ -60,9 +60,7 @@ export const getAllLeads = async (req: Request, res: Response) => {
   try {
     const leads = await Lead.find();
 
-    res
-      .status(200)
-      .json({ message: "Successfully retrieved leads", data: leads });
+    res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
     res.status(500).json({ message: "Failed to retrieve leads", error });
   }
