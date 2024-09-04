@@ -7,7 +7,13 @@ import bodyParser from "body-parser";
 import { connectDatabase } from "./config/database";
 
 // routes import
-import { authRoutes, formRoutes, leadRoutes, userRoutes } from "./routes";
+import {
+  airportRoutes,
+  authRoutes,
+  formRoutes,
+  leadRoutes,
+  userRoutes,
+} from "./routes";
 
 // Error catcher middleware import
 import { errorCatcher } from "./utils/errorCatcher";
@@ -38,6 +44,7 @@ app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/form", formRoutes);
 app.use("/leads", leadRoutes);
+app.use("/airports", airportRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 4000;

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 
 import Lead from "../models/lead";
+import { sendTicketConfirmationEmail } from "../services";
 
 export const addLead = async (req: Request, res: Response) => {
   try {
@@ -38,6 +39,60 @@ export const editLead = async (req: Request, res: Response) => {
   }
 };
 
+export const addCallLog = async (req: Request, res: Response) => {
+  try {
+    const leadId = req.body.leadId;
+    const callLogData = req.body;
+
+    const lead = await Lead.findById(leadId);
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    lead.call_logs.push({ ...callLogData, leadId: null });
+    await lead.save();
+
+    res.status(200).json({
+      message: "Call log added successfully",
+      data: lead.call_logs[lead.call_logs.length - 1],
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to add call log", error });
+  }
+};
+
+export const sendPnrConfirmationEmail = async (req: Request, res: Response) => {
+  try {
+    const leadId = req.params.leadId;
+    const { pnr } = req.body;
+
+    // Fetch lead details
+    const lead = await Lead.findById(leadId).populate("departure arrival");
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    // TODO: Implement email sending logic here
+    sendTicketConfirmationEmail(lead.email, pnr, lead.passenger_name, {
+      departureCity: lead.departure.city,
+      arrivalCity: lead.arrival.city,
+      departureDate: lead.travelDate,
+    });
+    lead.pnr = pnr;
+    await lead.save();
+
+    res
+      .status(200)
+      .json({ message: "PNR confirmation email sent successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to send PNR confirmation email", error });
+  }
+};
+
 export const deleteLead = async (req: Request, res: Response) => {
   try {
     const leadId = req.params.id;
@@ -58,7 +113,7 @@ export const deleteLead = async (req: Request, res: Response) => {
 
 export const getAllLeads = async (req: Request, res: Response) => {
   try {
-    const leads = await Lead.find().populate("claimed_by");
+    const leads = await Lead.find().populate("claimed_by departure arrival");
 
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
@@ -70,15 +125,15 @@ export const getLeadById = async (req: Request, res: Response) => {
   try {
     const leadId = req.params.id;
 
-    const lead = await Lead.findById(leadId).populate("claimed_by");
+    const lead = await Lead.findById(leadId).populate(
+      "claimed_by departure arrival"
+    );
 
     if (!lead) {
       return res.status(404).json({ message: "Lead not found" });
     }
 
-    res
-      .status(200)
-      .json({ message: "Successfully retrieved lead", data: lead });
+    res.status(200).json({ message: "Successfully retrieved lead", lead });
   } catch (error) {
     res.status(500).json({ message: "Failed to retrieve lead", error });
   }
@@ -88,7 +143,9 @@ export const getLeadsByUser = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
 
-    const leads = await Lead.find({ claimed_by: userId });
+    const leads = await Lead.find({ claimed_by: userId }).populate(
+      "departure arrival claimed_by"
+    );
 
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {

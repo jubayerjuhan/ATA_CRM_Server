@@ -12,10 +12,35 @@ const LeadSchema: Schema = new Schema(
       type: Date,
       default: Date.now,
     },
+    departure: {
+      type: Schema.Types.ObjectId,
+      ref: "Airport",
+    },
+    arrival: {
+      type: Schema.Types.ObjectId,
+      ref: "Airport",
+    },
     claimed_by: {
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+
+    call_logs: [
+      {
+        callType: {
+          type: String,
+          required: true,
+        },
+        callFor: {
+          type: String,
+          required: true,
+        },
+        dateTime: {
+          type: Date,
+          required: true,
+        },
+      },
+    ],
     // Arbitrary key-value pairs for lead data
   },
   { strict: false }
