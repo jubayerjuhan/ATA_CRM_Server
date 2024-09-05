@@ -2,17 +2,24 @@ import { Request, Response } from "express";
 
 import Lead from "../models/lead";
 import { sendTicketConfirmationEmail } from "../services";
+import { AuthorizedRequest } from "../types";
 
-export const addLead = async (req: Request, res: Response) => {
+export const addLead = async (req: AuthorizedRequest, res: Response) => {
   try {
-    const leadData = req.body;
+    const leadDataFromBody = req.body;
+
+    let leadData = { ...leadDataFromBody };
+
+    if (req.user?.role === "agent") {
+      leadData = { ...leadData, claimed_by: req.user._id };
+    }
 
     const newLead = new Lead(leadData);
     await newLead.save();
 
     res
       .status(200)
-      .json({ message: "Lead submitted successfully", data: newLead });
+      .json({ message: "Lead submitted successfully", lead: newLead });
   } catch (error) {
     res.status(500).json({ message: "Failed to submit lead", error });
   }

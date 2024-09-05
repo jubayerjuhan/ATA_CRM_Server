@@ -9,12 +9,13 @@ import {
   getLeadsByUser,
   sendPnrConfirmationEmail,
 } from "../controllers/LeadController";
+import { checkRole } from "../middlewares";
 
 // Create a new router for auth routes
 const router: Router = Router();
 
 // Define the routes
-router.route("/").post(addLead);
+router.route("/").post(checkRole(["admin", "agent"]), addLead);
 router.route("/").get(getAllLeads);
 router.route("/:id").get(getLeadById);
 router.route("/:id").put(editLead);
