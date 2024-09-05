@@ -20,8 +20,6 @@ export const checkRole = (allowedRoles: string[]) => {
         return res.status(401).json({ message: "No token provided" });
       }
 
-      console.log(process.env.JWT_SECRET, "kjsjs");
-
       const decoded = jwt.verify(
         token,
         process.env.JWT_SECRET as string

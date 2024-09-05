@@ -81,6 +81,12 @@ export const sendPnrConfirmationEmail = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Lead not found" });
     }
 
+    if (!lead.departure || !lead.arrival) {
+      res.status(500).json({
+        message: "Please Add The Departure and Arrival Airport In The Lead",
+      });
+    }
+
     // TODO: Implement email sending logic here
     sendTicketConfirmationEmail(lead.email, pnr, lead.passenger_name, {
       departureCity: lead.departure.city,
@@ -120,7 +126,9 @@ export const deleteLead = async (req: Request, res: Response) => {
 
 export const getAllLeads = async (req: Request, res: Response) => {
   try {
-    const leads = await Lead.find().populate("claimed_by departure arrival");
+    const leads = await Lead.find()
+      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+      .populate("claimed_by departure arrival");
 
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
@@ -150,9 +158,9 @@ export const getLeadsByUser = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
 
-    const leads = await Lead.find({ claimed_by: userId }).populate(
-      "departure arrival claimed_by"
-    );
+    const leads = await Lead.find({ claimed_by: userId })
+      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+      .populate("departure arrival claimed_by");
 
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
