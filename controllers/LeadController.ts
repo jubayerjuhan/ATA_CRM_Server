@@ -93,8 +93,9 @@ export const sendPnrConfirmationEmail = async (req: Request, res: Response) => {
       arrivalCity: lead.arrival.city,
       departureDate: lead.travelDate,
     });
+
     lead.pnr = pnr;
-    await lead.save();
+    const response = await lead.save();
 
     res
       .status(200)
