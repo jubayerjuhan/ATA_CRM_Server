@@ -22,7 +22,7 @@ export const sendPaymentLinkEmail = async (
   // Use test email in non-production environments
   email =
     process.env.NODE_ENV === "production"
-      ? email
+      ? (process.env.RESEND_TEST_EMAIL as string)
       : (process.env.RESEND_TEST_EMAIL as string);
 
   try {
