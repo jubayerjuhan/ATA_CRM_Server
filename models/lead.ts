@@ -27,6 +27,25 @@ const LeadSchema: Schema = new Schema(
       type: Schema.Types.ObjectId,
       ref: "User",
     },
+    payment: {
+      url: {
+        type: String,
+      },
+      sessionId: {
+        type: String,
+      },
+      amount: {
+        type: Number,
+      },
+      currency: {
+        type: String,
+      },
+      status: {
+        type: String,
+        enum: ["pending", "completed", "failed"],
+        default: "pending",
+      },
+    },
 
     call_logs: [
       {
