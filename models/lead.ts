@@ -31,9 +31,8 @@ const LeadSchema: Schema = new Schema(
           type: String,
           required: true,
         },
-        callFor: {
+        notes: {
           type: String,
-          required: true,
         },
         dateTime: {
           type: Date,
