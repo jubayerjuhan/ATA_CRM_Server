@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import Stripe from "stripe";
 import Lead from "../models/lead";
+import { sendPaymentLinkEmail } from "../services";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2024-06-20", // Use the latest API version
@@ -24,6 +25,9 @@ export const createAndSendPaymentLink = async (req: Request, res: Response) => {
       return res.status(404).json({ error: "Lead not found" });
     }
 
+    if (lead.payment.status === "completed") {
+      return res.status(500).json({ error: "Payment Already Made" });
+    }
     const quotedAmount = Number(lead.quotedAmount);
 
     // Validate input
@@ -61,11 +65,28 @@ export const createAndSendPaymentLink = async (req: Request, res: Response) => {
       status: "pending",
     };
 
+    lead.status = "Payment Link Sent";
+
+    try {
+      await sendPaymentLinkEmail(lead.email, lead.firstName, {
+        amount: quotedAmount,
+        currency: "USD",
+        paymentLink: session.url as string,
+      });
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ error: "Failed To Send Payment Link In Email" });
+    }
+
     // Save the updated lead
     await lead.save();
 
+    res
+      .status(200)
+      .json({ message: "Payment Link Sent To The Email", success: true });
+
     // Send the payment link as the response
-    res.json({ paymentLink: session.url, leadId: lead._id });
   } catch (error) {
     console.error("Error creating payment link:", error);
     res.status(500).json({ error: "Failed to create payment link" });

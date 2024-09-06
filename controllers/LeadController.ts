@@ -88,13 +88,14 @@ export const sendPnrConfirmationEmail = async (req: Request, res: Response) => {
     }
 
     // TODO: Implement email sending logic here
-    sendTicketConfirmationEmail(lead.email, pnr, lead.passenger_name, {
+    sendTicketConfirmationEmail(lead.email, pnr, lead.firstName, {
       departureCity: lead.departure.city,
       arrivalCity: lead.arrival.city,
       departureDate: lead.travelDate,
     });
 
     lead.pnr = pnr;
+    lead.status = "PNR Sent";
     const response = await lead.save();
 
     res

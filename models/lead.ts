@@ -47,6 +47,17 @@ const LeadSchema: Schema = new Schema(
       },
     },
 
+    status: {
+      type: String,
+      enum: [
+        "In Progress",
+        "PNR Sent",
+        "Payment Link Sent",
+        "Payment Complete",
+      ],
+      default: "In Progress",
+    },
+
     call_logs: [
       {
         callType: {
@@ -62,6 +73,7 @@ const LeadSchema: Schema = new Schema(
         },
       },
     ],
+
     // Arbitrary key-value pairs for lead data
   },
   { strict: false }
