@@ -39,6 +39,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 });
 app.use(bodyParser.urlencoded({ extended: false }));
 
+console.log("Hey Juhan The Champ! Did You Took Your Med's?...");
 // connect the database
 connectDatabase();
 
