@@ -46,6 +46,26 @@ export const editLead = async (req: Request, res: Response) => {
   }
 };
 
+export const claimLead = async (req: any, res: Response) => {
+  console.log("Hello World");
+  console.log(req.user, "req.user");
+  try {
+    const leadId = req.params.id;
+    const updatedLead = await Lead.findByIdAndUpdate(
+      leadId,
+      { claimed_by: req.user._id },
+      { new: true }
+    );
+
+    if (!updatedLead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+    res.status(200).json({ message: "Lead updated successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update lead" });
+  }
+};
+
 export const addCallLog = async (req: Request, res: Response) => {
   try {
     const leadId = req.body.leadId;

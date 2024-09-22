@@ -68,7 +68,7 @@ const LeadSchema: Schema = new Schema(
           type: String,
         },
         dateTime: {
-          type: Date,
+          type: String,
           required: true,
         },
       },
