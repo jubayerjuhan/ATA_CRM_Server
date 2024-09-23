@@ -3,8 +3,10 @@ import {
   addCallLog,
   addLead,
   claimLead,
+  convertLead,
   deleteLead,
   editLead,
+  getAllConvertedLeads,
   getAllLeads,
   getLeadById,
   getLeadsByUser,
@@ -18,9 +20,15 @@ const router: Router = Router();
 // Define the routes
 router.route("/").post(checkRole(["admin", "agent"]), addLead);
 router.route("/").get(getAllLeads);
+router
+  .route("/converted-leads/list")
+  .get(checkRole(["admin", "agent"]), getAllConvertedLeads);
 router.route("/:id").get(getLeadById);
 router.route("/:id").put(editLead);
 router.route("/:id/claim-lead").post(checkRole(["admin", "agent"]), claimLead);
+router
+  .route("/:id/convert-lead")
+  .post(checkRole(["admin", "agent"]), convertLead);
 router.route("/:id/add-call-log").put(addCallLog);
 router.route("/:id").delete(deleteLead);
 

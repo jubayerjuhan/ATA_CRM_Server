@@ -4,6 +4,7 @@ interface ILead extends Document {
   [key: string]: any; // Allows storing any key-value pair based on the fields
   createdAt: Date;
   claimed_by: string;
+  converted: boolean;
 }
 
 const LeadSchema: Schema = new Schema(
@@ -73,7 +74,10 @@ const LeadSchema: Schema = new Schema(
         },
       },
     ],
-
+    converted: {
+      type: Boolean,
+      default: false,
+    },
     // Arbitrary key-value pairs for lead data
   },
   { strict: false }

@@ -8,7 +8,7 @@ export const addLead = async (req: AuthorizedRequest, res: Response) => {
   try {
     const leadDataFromBody = req.body;
 
-    let leadData = { ...leadDataFromBody };
+    let leadData = { ...leadDataFromBody, caseDate: new Date() };
 
     if (req.user?.role === "agent") {
       leadData = { ...leadData, claimed_by: req.user._id };
@@ -155,6 +155,42 @@ export const getAllLeads = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
     res.status(500).json({ message: "Failed to retrieve leads", error });
+  }
+};
+
+export const getAllConvertedLeads = async (req: Request, res: Response) => {
+  try {
+    const convertedLeads = await Lead.find({ converted: true })
+      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+      .populate("claimed_by departure arrival");
+
+    res.status(200).json({
+      message: "Successfully retrieved converted leads",
+      leads: convertedLeads,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve converted leads", error });
+  }
+};
+
+export const convertLead = async (req: Request, res: Response) => {
+  try {
+    const leadId = req.params.id;
+
+    const lead = await Lead.findById(leadId);
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    lead.converted = true;
+    await lead.save();
+
+    res.status(200).json({ message: "Lead converted successfully", lead });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to convert lead", error });
   }
 };
 

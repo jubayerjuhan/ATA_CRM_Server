@@ -5,6 +5,7 @@ import leadRoutes from "./leadRoutes";
 import airportRoutes from "./airportRoutes";
 import paymentRoutes from "./paymentRoutes";
 import stripeWebhookRoutes from "./stripeWebhookRoutes";
+import customerRoutes from "./customerRoutes";
 
 export {
   authRoutes,
@@ -14,4 +15,5 @@ export {
   airportRoutes,
   paymentRoutes,
   stripeWebhookRoutes,
+  customerRoutes,
 };

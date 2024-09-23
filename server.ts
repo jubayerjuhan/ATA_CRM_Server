@@ -8,6 +8,7 @@ import { connectDatabase } from "./config/database";
 import {
   airportRoutes,
   authRoutes,
+  customerRoutes,
   formRoutes,
   leadRoutes,
   paymentRoutes,
@@ -52,6 +53,7 @@ app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/form", formRoutes);
 app.use("/leads", leadRoutes);
+app.use("/customers", customerRoutes);
 app.use("/airports", airportRoutes);
 app.use("/payment", paymentRoutes);
 
