@@ -225,3 +225,28 @@ export const getLeadsByUser = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to retrieve leads", error });
   }
 };
+
+// Search lead by email
+export const searchLeadByEmail = async (req: Request, res: Response) => {
+  try {
+    const email = req.body.email;
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ message: "Email query parameter is required" });
+    }
+
+    const lead = await Lead.findOne({ email }).populate(
+      "claimed_by departure arrival"
+    );
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    res.status(200).json({ message: "Successfully retrieved lead", lead });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to retrieve lead", error });
+  }
+};

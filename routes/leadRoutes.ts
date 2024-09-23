@@ -10,6 +10,7 @@ import {
   getAllLeads,
   getLeadById,
   getLeadsByUser,
+  searchLeadByEmail,
   sendPnrConfirmationEmail,
 } from "../controllers/LeadController";
 import { checkRole } from "../middlewares";
@@ -34,6 +35,9 @@ router.route("/:id").delete(deleteLead);
 
 // Route to get leads by a specific user
 router.route("/user/:userId").get(getLeadsByUser);
+
+// Search leads
+router.route("/search").post(searchLeadByEmail);
 
 // Send pnr confirmation email
 router.route("/:leadId/send-pnr-confirmation").post(sendPnrConfirmationEmail);
