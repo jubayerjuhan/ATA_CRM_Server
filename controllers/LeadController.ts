@@ -47,8 +47,6 @@ export const editLead = async (req: Request, res: Response) => {
 };
 
 export const claimLead = async (req: any, res: Response) => {
-  console.log("Hello World");
-  console.log(req.user, "req.user");
   try {
     const leadId = req.params.id;
     const updatedLead = await Lead.findByIdAndUpdate(

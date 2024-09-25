@@ -74,6 +74,14 @@ const LeadSchema: Schema = new Schema(
         },
       },
     ],
+
+    // Quoted amount with dynamic fields like 'adult_1', 'adult_2', ..., 'child_1', 'infant_1', etc.
+    quoted_amount: {
+      type: Map,
+      of: Number, // Each key-value pair will be a string (like 'adult_1') and a number (amount)
+      default: { total: 0 }, // Default total amount
+    },
+
     converted: {
       type: Boolean,
       default: false,

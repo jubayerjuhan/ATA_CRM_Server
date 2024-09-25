@@ -21,8 +21,6 @@ export const signUpUser = async (
       ...req.body,
     });
 
-    console.log(user, "user....");
-
     const message = `Welcome ${name}, Your Account Has Been Created Successfully`;
 
     // setting mongodb user id as string
@@ -49,8 +47,6 @@ export const loginUser = async (
       throw new ErrorThrower(404, "Please Enter Email and Password");
 
     const user = await User.findOne({ email }).select("+password");
-
-    console.log(user, "user");
 
     if (!user) throw new ErrorThrower(404, "No User Found With This Email");
 

@@ -8,8 +8,6 @@ export const getAirports = async (req: Request, res: Response) => {
     // Explicitly allow any key to be added to the query object
     const query: { [key: string]: any } = {};
 
-    console.log(search);
-
     if (search) {
       const searchRegex = new RegExp(search as string, "i");
       query["$or"] = [
