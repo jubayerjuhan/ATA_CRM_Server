@@ -11,35 +11,20 @@ import {
   Link,
 } from "@react-email/components";
 import { CSSProperties } from "react";
+import moment from "moment";
 
 interface ItineraryEmailProps {
   name: string;
-  airline: string;
-  confirmationNumber: string;
-  date: string;
-  flightNumber: string;
-  departureTime: string;
-  departureCity: string;
-  arrivalTime: string;
-  arrivalCity: string;
-  seatNumber: string;
-  duration: string;
-  aircraftType: string;
+  company: string;
+  flights: any;
+  lead: any;
 }
 
 const ItineraryEmail = ({
   name,
-  airline,
-  confirmationNumber,
-  date,
-  flightNumber,
-  departureTime,
-  departureCity,
-  arrivalTime,
-  arrivalCity,
-  seatNumber,
-  duration,
-  aircraftType,
+  company,
+  flights,
+  lead,
 }: ItineraryEmailProps) => (
   <Html>
     <Head />
@@ -47,51 +32,105 @@ const ItineraryEmail = ({
     <Body style={mainStyle}>
       <Container style={containerStyle}>
         <Section style={headerStyle}>
-          <Text style={logoStyle}>AIRLINE</Text>
+          <Text style={logoStyle}>{company.toUpperCase()}</Text>
           <Text>Flight Itinerary for {name}</Text>
         </Section>
 
         <Section style={sectionStyle}>
-          <Heading as="h2">Thank you for choosing {airline}.</Heading>
+          <Heading as="h2">Thank you for choosing {company}.</Heading>
           <Text>Your reservation is confirmed.</Text>
-          <Text>Confirmation Number: {confirmationNumber}</Text>
         </Section>
 
-        <Section style={flightContainerStyle}>
-          <table role="presentation" width="100%">
-            <tr>
-              <td style={dateStyle}>{date}</td>
-              <td style={alignRightStyle}>Flight: {flightNumber}</td>
-            </tr>
-          </table>
+        {flights.map((flight: any, index: number) => (
+          <Section style={flightContainerStyle}>
+            <table role="presentation" width="100%">
+              <tr>
+                <td style={dateStyle}>
+                  {moment(flight.flt.departure.string).format(
+                    "DD MMMM YYYY [at] h:mm A"
+                  )}{" "}
+                  {flight.flt.departure.day}
+                </td>
+                <td style={alignRightStyle}>
+                  Flight: {flight.flt.iatacode} {flight.flt.flightNo}
+                </td>
+              </tr>
+            </table>
 
-          <table
-            role="presentation"
-            width="100%"
-            style={flightDetailsTableStyle}
-          >
-            <tr>
-              <td style={detailsStyle}>
-                <Text style={timeStyle}>{departureTime}</Text>
-                <Text style={{ marginBottom: "0px" }}>{departureCity}</Text>
-              </td>
-              <td style={detailsStyle}>
-                <Text style={timeStyle}>{arrivalTime}</Text>
-                <Text style={{ marginBottom: "0px" }}>{arrivalCity}</Text>
-              </td>
-            </tr>
-          </table>
+            <table
+              role="presentation"
+              width="100%"
+              style={flightDetailsTableStyle}
+            >
+              <tr>
+                <td style={detailsStyle}>
+                  <Text style={timeStyle}>
+                    {moment(flight.flt.departure.string).format(
+                      "ddd, MMM D  h:mm A"
+                    )}
+                  </Text>
+                  <Text
+                    style={{
+                      marginBottom: "0px",
+                      fontWeight: "bold",
+                      ...timeStyle,
+                    }}
+                  >
+                    {flight.dep.cityname}
+                  </Text>
+                </td>
+                <td style={detailsStyle}>
+                  <Text style={timeStyle}>
+                    {moment(flight.flt.arrival.string).format(
+                      "ddd, MMM D  h:mm A"
+                    )}
+                  </Text>{" "}
+                  <Text
+                    style={{
+                      marginBottom: "0px",
+                      fontWeight: "bold",
+                      ...timeStyle,
+                    }}
+                  >
+                    {flight.arr.cityname}
+                  </Text>
+                </td>
+              </tr>
+            </table>
 
-          <div>
-            <Text>Seat Assignment: {seatNumber}</Text>
-            <Text>Travel Time: {duration}</Text>
-            <Text style={{ marginBottom: "0px" }}>
-              Aircraft: {aircraftType}
-            </Text>
-          </div>
-        </Section>
+            <div>
+              <Text>Distance: {flight.flt.distance.km} KM</Text>
+              <Text>
+                Travel Time: {flight.flt.duration.hours} Hours and{" "}
+                {flight.flt.duration.minutes} Mins
+              </Text>
+              <Text>Cabin: {flight.flt.cabin}</Text>
+              <Text style={{ marginBottom: "0px" }}>
+                Operated By: {flight.flt.operated_by}
+              </Text>
+              <img
+                src={flight.flt["png-logo-low-res"]}
+                alt=""
+                style={{
+                  height: "50px",
+                  objectFit: "contain",
+                  padding: "5px",
+                  borderRadius: "5px",
+                  marginTop: "10px",
+                }}
+              />
+            </div>
+          </Section>
+        ))}
 
-        <Link href="#" style={buttonStyle as any}>
+        <Link
+          href={
+            process.env.NODE_ENV === "production"
+              ? `${process.env.FRONTEND_URL_PROD}/acknowledgement?leadId=${lead._id}`
+              : `${process.env.FRONTEND_URL_PROD}/acknowledgement?leadId=${lead._id}`
+          }
+          style={buttonStyle as any}
+        >
           I Acknowledge This Booking
         </Link>
 
@@ -101,7 +140,7 @@ const ItineraryEmail = ({
         </Text>
         <Text>
           For changes or questions about your reservation, you may contact{" "}
-          {airline} Support via telephone at [Phone Number].
+          {company}..
         </Text>
       </Container>
     </Body>
@@ -172,7 +211,6 @@ const detailsStyle = {
 
 const timeStyle = {
   fontSize: "18px",
-  fontWeight: "bold",
   marginTop: "0px",
 };
 

@@ -52,11 +52,17 @@ const LeadSchema: Schema = new Schema(
       type: String,
       enum: [
         "In Progress",
-        "PNR Sent",
+        "Itenary Email Sent",
         "Payment Link Sent",
         "Payment Complete",
       ],
       default: "In Progress",
+    },
+
+    // email status
+    itenary_email_sent: {
+      type: Boolean,
+      default: false,
     },
 
     call_logs: [
