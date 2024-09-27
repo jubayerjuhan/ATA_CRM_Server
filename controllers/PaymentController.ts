@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import Stripe from "stripe";
 import Lead from "../models/lead";
 import { sendPaymentLinkEmail } from "../services";
+import { sendPaymentMethodSelectorEmail } from "../services/email/paymentMethodSelectEmail";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2024-06-20", // Use the latest API version
@@ -124,5 +125,34 @@ export const retrivePaymentInformation = async (
   } catch (error) {
     console.error("Error checking payment status:", error);
     res.status(500).json({ error: "Failed to check payment status" });
+  }
+};
+
+// send payment link in email
+
+export const paymentMethodSelector = async (req: Request, res: Response) => {
+  try {
+    const leadId = req.params.id;
+
+    if (!leadId) {
+      return res.status(400).json({ error: "Lead ID is required" });
+    }
+
+    // Retrieve the lead
+    const lead = await Lead.findById(leadId);
+
+    if (!lead?.quoted_amount) {
+      return res
+        .status(500)
+        .json({ message: "Please add quoted amount first", success: true });
+    }
+
+    // Send the payment link in email
+    await sendPaymentMethodSelectorEmail(lead);
+
+    res.json({ message: "Payment link sent in email", success: true });
+  } catch (error) {
+    console.error("Error sending payment link in email:", error);
+    res.status(500).json({ error: "Failed to send payment link in email" });
   }
 };

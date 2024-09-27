@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
-    "jsx": "react",
+    "jsx": "react-jsx",
     /* Language and Environment */
     "target": "es2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
 
     /* Modules */
     "module": "commonjs" /* Specify what module code is generated. */,
     "resolveJsonModule": true /* Enable importing .json files. */,
+
+    "allowSyntheticDefaultImports": true,
 
     /* JavaScript Support */
     "allowJs": true /* Allow JavaScript files to be a part of your program. Use the 'checkJS' option to get errors from these files. */,
