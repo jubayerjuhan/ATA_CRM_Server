@@ -4,8 +4,7 @@ import brevo from "@getbrevo/brevo";
 import moment from "moment";
 import axios from "axios";
 
-const API_KEY =
-  "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";
+const API_KEY = process.env.BREVO_API_KEY as string;
 const API_URL = "https://api.sendinblue.com/v3/smtp/email";
 
 const FRONTEND_URL_PROD = process.env.FRONTEND_URL_PROD;
