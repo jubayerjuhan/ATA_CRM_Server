@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 import { render } from "@react-email/render";
 // import ItineraryEmail from "./templates/ItineraryEmailTemplate"; // Your React email component
-import React from "react";
+// import React from "react";
 // import PaymentEmailTemplate from "./templates/PaymentLinkEmailTemplate";
 
 const resend = new Resend("re_PqyvLBVb_9r8ZKb6T164gJkyCNkDgJf76");
