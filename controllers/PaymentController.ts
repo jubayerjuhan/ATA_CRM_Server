@@ -148,7 +148,7 @@ export const paymentMethodSelector = async (req: Request, res: Response) => {
     }
 
     // Send the payment link in email
-    await sendPaymentMethodSelectorEmail(lead);
+    await sendPaymentMethodSelectorEmail(lead.email, lead);
 
     res.json({ message: "Payment link sent in email", success: true });
   } catch (error) {
