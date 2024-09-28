@@ -107,8 +107,9 @@ export const sendItineraryEmailController = async (
     }
 
     const flights = await convertPNR(pnr);
-    await sendItineraryEmail(lead.email, lead, flights);
 
+    // Sending The Itinerary Email
+    await sendItineraryEmail(lead.email, lead.first_name, leadId, flights);
     lead.pnr = pnr;
     lead.status = "Itenary Email Sent";
     lead.itenary_email_sent = true;
