@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { render } from "@react-email/render";
 import { Resend } from "resend";
+import Stripe from "stripe";
 
 import Lead from "../models/lead";
 import { sendTicketConfirmationEmail } from "../services";
@@ -11,6 +12,10 @@ import axios from "axios";
 const PNR_CONVERTER_API_URL = "https://api.pnrconverter.com/api";
 const PNR_CONVERTER_PUBLIC_APP_KEY = process.env.PNR_CONVERTER_PUBLIC_APP_KEY;
 const PNR_CONVERTER_PRIVATE_APP_KEY = process.env.PNR_CONVERTER_PRIVATE_APP_KEY;
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
+  apiVersion: "2024-06-20", // Use the latest API version
+});
 
 export const getAllCustomers = async (
   req: AuthorizedRequest,
@@ -42,6 +47,8 @@ export const addQuotedAmount = async (req: Request, res: Response) => {
       return res.status(400).json({ message: "Quoted amount is required" });
     }
 
+    console.log(quotedAmount, "Quoted Amount");
+
     const leadId = req.params.id;
 
     const lead = await Lead.findById(leadId);
@@ -50,7 +57,31 @@ export const addQuotedAmount = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Lead not found" });
     }
 
+    // create stripe checkout session here
+    const session = await stripe.checkout.sessions.create({
+      payment_method_types: ["card"],
+      metadata: { leadId },
+      line_items: [
+        {
+          price_data: {
+            currency: "usd",
+            unit_amount: quotedAmount.total * 100,
+            product_data: {
+              name: "Payment",
+            },
+          },
+          quantity: 1,
+        },
+      ],
+      mode: "payment",
+      success_url: `${process.env.FRONTEND_URL_PROD}/payment-success`,
+      cancel_url: `${process.env.FRONTEND_URL_PROD}/payment-failed`,
+    });
+
     lead.quoted_amount = quotedAmount;
+    lead.stripe_payment_link = session.url;
+
+    console.log(lead, "Lead");
     await lead.save();
 
     res.status(200).json({ message: "Quoted amount added successfully" });

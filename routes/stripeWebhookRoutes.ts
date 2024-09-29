@@ -56,6 +56,7 @@ async function handleCheckoutSessionCompleted(
       if (lead) {
         lead.payment.status = "completed";
         lead.status = "Payment Complete";
+        lead.converted = true;
         await lead.save();
         console.log(`Payment status updated to paid for lead ${leadId}`);
       } else {

@@ -81,6 +81,10 @@ const LeadSchema: Schema = new Schema(
       },
     ],
 
+    stripe_payment_link: {
+      type: String,
+    },
+
     // Quoted amount with dynamic fields like 'adult_1', 'adult_2', ..., 'child_1', 'infant_1', etc.
     quoted_amount: {
       type: Map,
