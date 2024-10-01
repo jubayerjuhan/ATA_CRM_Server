@@ -11,7 +11,8 @@ export const sendItineraryEmail = async (
   email: string,
   name: string,
   leadId: string,
-  flights: any
+  flights: any,
+  lead: any
 ) => {
   const COMPANY_NAME = process.env.COMPANY_NAME
     ? process.env.COMPANY_NAME
@@ -27,6 +28,8 @@ export const sendItineraryEmail = async (
     );
   });
 
+  const itinerary_amounts = lead.itinerary_amounts;
+
   const data = {
     to: [{ email }],
     templateId: 9, // Replace with your actual template ID
@@ -35,6 +38,12 @@ export const sendItineraryEmail = async (
       firstName: name,
       flights: flights,
       leadId: leadId,
+      baggageCount: itinerary_amounts.baggage_count,
+      eachBagWeight: itinerary_amounts.each_bag_weight,
+      totalWeight: itinerary_amounts.total_weight,
+      dateChaningCharge: itinerary_amounts.date_changing_charge,
+      cancellationCharge: itinerary_amounts.cancellation_charge,
+      handlingCharge: itinerary_amounts.handling_charge,
     },
   };
 

@@ -108,6 +108,10 @@ const LeadSchema: Schema = new Schema(
       default: { total: 0 }, // Default total amount
     },
 
+    itinerary_amounts: {
+      type: Object,
+    },
+
     converted: {
       type: Boolean,
       default: false,
