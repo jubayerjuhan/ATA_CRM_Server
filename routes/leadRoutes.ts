@@ -6,6 +6,7 @@ import {
   convertLead,
   deleteLead,
   editLead,
+  getAllCancelledLeads,
   getAllConvertedLeads,
   getAllLeads,
   getLeadById,
@@ -24,6 +25,9 @@ router.route("/").get(getAllLeads);
 router
   .route("/converted-leads/list")
   .get(checkRole(["admin", "agent"]), getAllConvertedLeads);
+router
+  .route("/cancelled-leads/list")
+  .get(checkRole(["admin", "agent"]), getAllCancelledLeads);
 router.route("/:id").get(getLeadById);
 router.route("/:id").put(editLead);
 router.route("/:id/claim-lead").post(checkRole(["admin", "agent"]), claimLead);

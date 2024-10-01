@@ -173,6 +173,24 @@ export const getAllConvertedLeads = async (req: Request, res: Response) => {
   }
 };
 
+// get all cancelled leads
+export const getAllCancelledLeads = async (req: Request, res: Response) => {
+  try {
+    const cancelledLeads = await Lead.find({ cancelled: true })
+      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+      .populate("claimed_by departure arrival");
+
+    res.status(200).json({
+      message: "Successfully retrieved converted leads",
+      leads: cancelledLeads,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve converted leads", error });
+  }
+};
+
 export const convertLead = async (req: Request, res: Response) => {
   try {
     const leadId = req.params.id;
