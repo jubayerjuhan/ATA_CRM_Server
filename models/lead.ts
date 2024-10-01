@@ -41,6 +41,9 @@ const LeadSchema: Schema = new Schema(
       currency: {
         type: String,
       },
+      date: {
+        type: Date,
+      },
       status: {
         type: String,
         enum: ["pending", "completed", "failed"],
@@ -81,8 +84,21 @@ const LeadSchema: Schema = new Schema(
       },
     ],
 
+    selectedPaymentMethod: {
+      type: String,
+    },
+
     stripe_payment_link: {
       type: String,
+    },
+
+    cancelled: {
+      type: Boolean,
+      default: false,
+    },
+
+    follow_up_date: {
+      type: Date,
     },
 
     // Quoted amount with dynamic fields like 'adult_1', 'adult_2', ..., 'child_1', 'infant_1', etc.

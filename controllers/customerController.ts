@@ -8,6 +8,7 @@ import { sendTicketConfirmationEmail } from "../services";
 import { AuthorizedRequest } from "../types";
 import { sendItineraryEmail } from "../services/email/itineraryEmail";
 import axios from "axios";
+import moment from "moment";
 
 const PNR_CONVERTER_API_URL = "https://api.pnrconverter.com/api";
 const PNR_CONVERTER_PUBLIC_APP_KEY = process.env.PNR_CONVERTER_PUBLIC_APP_KEY;
@@ -149,5 +150,103 @@ export const sendItineraryEmailController = async (
     res.status(200).json({ message: "Itinerary Email Sent Successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to send itinerary email", error });
+  }
+};
+
+// Get Customer By Date
+export const getCustomersByDate = async (req: Request, res: Response) => {
+  const { startDate, endDate } = req.query;
+
+  // Check if both startDate and endDate are provided
+  if (!startDate || !endDate) {
+    return res
+      .status(400)
+      .json({ message: "Please provide both startDate and endDate" });
+  }
+
+  try {
+    // Parse startDate and endDate using moment to ensure valid date objects
+    const start = moment(startDate as string, moment.ISO_8601, true).startOf(
+      "day"
+    );
+    const end = moment(endDate as string, moment.ISO_8601, true).endOf("day");
+
+    if (!start.isValid() || !end.isValid()) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+
+    // Query the leads where the payment date falls within the range
+    const leads = await Lead.find({
+      "payment.date": {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+      "payment.status": "completed",
+      converted: true,
+    });
+
+    // Query the leads where the payment date falls within the range and status is cancelled
+    const cancelledLeads = await Lead.find({
+      "payment.date": {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+      "payment.status": "completed",
+      converted: false,
+      cancelled: true,
+    });
+
+    // also see how many followups I have on that day
+    const followups = await Lead.find({
+      follow_up_date: {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+    });
+
+    console.log("Followups:", followups);
+
+    // loop through the leads and please make the sum of the total amount quoted_amount.total
+    let totalAmount = 0;
+
+    leads.forEach((lead) => {
+      totalAmount += lead.quoted_amount.get("total");
+    });
+
+    // Return the filtered leads
+    res.status(200).json({
+      message: "Leads retrieved successfully",
+      leads,
+      cancelledLeads,
+      followups: followups.length,
+      totalAmount,
+    });
+  } catch (error) {
+    console.error("Error fetching leads:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+// make a route to cancel a booking
+export const cancelBooking = async (req: Request, res: Response) => {
+  try {
+    const leadId = req.params.id;
+
+    const lead = await Lead.findById(leadId);
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    // Update the lead status to cancelled
+    lead.status = "Cancelled";
+    lead.cancelled = true;
+    lead.converted = false;
+
+    await lead.save();
+
+    res.status(200).json({ message: "Booking cancelled successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to cancel booking", error });
   }
 };

@@ -57,6 +57,11 @@ app.use("/customers", customerRoutes);
 app.use("/airports", airportRoutes);
 app.use("/payment", paymentRoutes);
 
+// Test route
+app.get("/test", (req: Request, res: Response) => {
+  res.send("Test Route");
+});
+
 // Start the server
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
