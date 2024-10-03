@@ -314,12 +314,15 @@ export const sendTicketEmail = async (req: Request, res: Response) => {
     await ticketSendingEmail(lead.email, uploadedFiles, lead);
 
     lead.ticket_links = uploadedFiles;
+    lead.ticket_sent = true;
+    lead.status = "Ticket Sent";
     await lead.save();
 
     res.status(200).json({
       message: "Ticket email sent successfully",
     });
   } catch (error) {
+    console.log(error, "Error...");
     console.error("Error uploading files:", error);
     res.status(500).send("Error uploading files");
   }

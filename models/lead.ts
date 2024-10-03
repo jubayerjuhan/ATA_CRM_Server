@@ -46,7 +46,6 @@ const LeadSchema: Schema = new Schema(
       },
       status: {
         type: String,
-        enum: ["pending", "completed", "failed"],
         default: "pending",
       },
     },
@@ -58,6 +57,8 @@ const LeadSchema: Schema = new Schema(
         "Itenary Email Sent",
         "Payment Link Sent",
         "Payment Complete",
+        "Ticket Sent",
+        "cancelled",
       ],
       default: "In Progress",
     },
@@ -116,7 +117,10 @@ const LeadSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
-
+    ticket_sent: {
+      type: Boolean,
+      default: false,
+    },
     ticket_links: [
       {
         type: String,
