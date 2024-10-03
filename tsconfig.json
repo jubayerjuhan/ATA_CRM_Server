@@ -3,7 +3,7 @@
     "jsx": "react-jsx",
     /* Language and Environment */
     "target": "es2016" /* Set the JavaScript language version for emitted JavaScript and include compatible library declarations. */,
-
+    "typeRoots": ["./node_modules/@types", "./types"],
     /* Modules */
     "module": "commonjs" /* Specify what module code is generated. */,
     "resolveJsonModule": true /* Enable importing .json files. */,

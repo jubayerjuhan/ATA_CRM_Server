@@ -274,11 +274,11 @@ export const cancelBooking = async (req: Request, res: Response) => {
 
 // Send the ticket in email
 export const sendTicketEmail = async (req: Request, res: Response) => {
-  if (!req.files || req.files.length === 0) {
+  if (!req?.files || req.files?.length === 0) {
     return res.status(400).send("No files uploaded.");
   }
 
-  const files = req.files as Express.Multer.File[];
+  const files = req?.files as Express.Multer.File[];
   const bucketName = "ata-ticket-uploads";
 
   try {
