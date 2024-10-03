@@ -2,6 +2,7 @@ import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
 import bodyParser from "body-parser";
+
 // configuration imports
 import { connectDatabase } from "./config/database";
 // routes import
@@ -56,11 +57,6 @@ app.use("/leads", leadRoutes);
 app.use("/customers", customerRoutes);
 app.use("/airports", airportRoutes);
 app.use("/payment", paymentRoutes);
-
-// Test route
-app.get("/test", (req: Request, res: Response) => {
-  res.send("Test Route");
-});
 
 // Start the server
 const PORT = process.env.PORT || 4000;

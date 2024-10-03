@@ -9,7 +9,22 @@ import { AuthorizedRequest } from "../types";
 import { sendItineraryEmail } from "../services/email/itineraryEmail";
 import axios from "axios";
 import moment from "moment";
+import {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+  ObjectCannedACL,
+} from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { ticketSendingEmail } from "../services/email/ticketSendingEmail";
 
+const s3Client = new S3Client({
+  region: "ap-southeast-2", // e.g., "us-west-2"
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID as string,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY as string,
+  },
+});
 const PNR_CONVERTER_API_URL = "https://api.pnrconverter.com/api";
 const PNR_CONVERTER_PUBLIC_APP_KEY = process.env.PNR_CONVERTER_PUBLIC_APP_KEY;
 const PNR_CONVERTER_PRIVATE_APP_KEY = process.env.PNR_CONVERTER_PRIVATE_APP_KEY;
@@ -254,5 +269,58 @@ export const cancelBooking = async (req: Request, res: Response) => {
     res.status(200).json({ message: "Booking cancelled successfully" });
   } catch (error) {
     res.status(500).json({ message: "Failed to cancel booking", error });
+  }
+};
+
+// Send the ticket in email
+export const sendTicketEmail = async (req: Request, res: Response) => {
+  if (!req.files || req.files.length === 0) {
+    return res.status(400).send("No files uploaded.");
+  }
+
+  const files = req.files as Express.Multer.File[];
+  const bucketName = "ata-ticket-uploads";
+
+  try {
+    const uploadedFiles = await Promise.all(
+      files.map(async (file) => {
+        const fileName = `${Date.now()}-${file.originalname}`;
+
+        const uploadParams = {
+          Bucket: bucketName,
+          Key: fileName,
+          Body: file.buffer,
+          ACL: ObjectCannedACL.public_read, // Makes the file publicly accessible
+          ContentType: "application/pdf",
+          ContentDisposition: "inline", // Displays the file inline in the browser
+        };
+
+        await s3Client.send(new PutObjectCommand(uploadParams));
+
+        // Generate the public URL for the uploaded file
+        return `https://${bucketName}.s3.amazonaws.com/${fileName}`;
+      })
+    );
+    const leadId = req.params.id;
+    const lead = await Lead.findById(leadId);
+
+    console.log(lead?.email, "Lead Email");
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    // Send the ticket email
+    await ticketSendingEmail(lead.email, uploadedFiles, lead);
+
+    lead.ticket_links = uploadedFiles;
+    await lead.save();
+
+    res.status(200).json({
+      message: "Ticket email sent successfully",
+    });
+  } catch (error) {
+    console.error("Error uploading files:", error);
+    res.status(500).send("Error uploading files");
   }
 };

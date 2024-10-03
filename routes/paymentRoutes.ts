@@ -4,7 +4,6 @@ import {
   paymentMethodSelector,
   retrivePaymentInformation,
 } from "../controllers/PaymentController";
-
 // Create a new router for auth routes
 const router: Router = Router();
 

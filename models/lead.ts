@@ -116,6 +116,12 @@ const LeadSchema: Schema = new Schema(
       type: Boolean,
       default: false,
     },
+
+    ticket_links: [
+      {
+        type: String,
+      },
+    ],
     // Arbitrary key-value pairs for lead data
   },
   { strict: false }
