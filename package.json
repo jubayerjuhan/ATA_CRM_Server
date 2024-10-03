@@ -43,7 +43,8 @@
     "react-dom": "^18.3.1",
     "resend": "^3.5.0",
     "stripe": "^16.10.0",
-    "typescript": "^5.5.2"
+    "typescript": "^5.5.2",
+    "@types/multer": "^1.4.12"
   },
   "devDependencies": {
     "@types/multer": "^1.4.12",
