@@ -16,6 +16,9 @@ const LeadSchema: Schema = new Schema(
     pnr: {
       type: String,
     },
+    leadOrigin: {
+      type: String,
+    },
     departure: {
       type: Schema.Types.ObjectId,
       ref: "Airport",

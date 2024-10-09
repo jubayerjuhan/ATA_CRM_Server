@@ -46,15 +46,8 @@ export const sendPaymentMethodSelectorEmail = async (
     to: [{ email }],
     templateId: 12, // Replace with your actual template ID
     params: {
-      company_name: COMPANY_NAME,
-      client_name: lead.firstName,
-      current_date: moment().format("DD MMMM YYYY"),
-      ITEMS: transformObjectKeys(quotedAmount),
-      subtotal: quotedAmount.total,
-      total_amount: quotedAmount.total,
-      stripe_link: `${FRONTEND_URL_PROD}/select-payment-method/${lead.id}?paymentMethod=stripe`,
-      cash_link: `${FRONTEND_URL_PROD}/select-payment-method/${lead.id}?paymentMethod=cash`,
-      slicepay_link: `${FRONTEND_URL_PROD}/select-payment-method/${lead.id}?paymentMethod=slicepay`,
+      companyName: COMPANY_NAME,
+      name: lead.firstName,
     },
   };
 
