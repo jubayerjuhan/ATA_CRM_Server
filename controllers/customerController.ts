@@ -175,7 +175,10 @@ export const sendItineraryEmailController = async (
 };
 
 // Get Customer By Date
-export const getCustomersByDate = async (req: Request, res: Response) => {
+export const getCustomersByDate = async (
+  req: AuthorizedRequest,
+  res: Response
+) => {
   const { startDate, endDate } = req.query;
 
   // Check if both startDate and endDate are provided
@@ -212,7 +215,6 @@ export const getCustomersByDate = async (req: Request, res: Response) => {
         $gte: start.toDate(),
         $lte: end.toDate(),
       },
-      "payment.status": "completed",
       converted: false,
       cancelled: true,
     });
@@ -225,7 +227,14 @@ export const getCustomersByDate = async (req: Request, res: Response) => {
       },
     });
 
-    console.log("Followups:", followups);
+    // my followups
+    const myFollowups = await Lead.find({
+      follow_up_date: {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+      claimed_by: req.user?._id as string,
+    });
 
     // loop through the leads and please make the sum of the total amount quoted_amount.total
     let totalAmount = 0;
@@ -240,6 +249,7 @@ export const getCustomersByDate = async (req: Request, res: Response) => {
       leads,
       cancelledLeads,
       followups: followups.length,
+      myFollowups: myFollowups.length,
       totalAmount,
     });
   } catch (error) {

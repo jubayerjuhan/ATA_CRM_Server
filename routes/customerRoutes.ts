@@ -27,7 +27,9 @@ router
 router
   .route("/:id/send-itinerary-email")
   .post(checkRole(["admin", "agent"]), sendItineraryEmailController);
-router.route("/filter/converted").get(getCustomersByDate);
+router
+  .route("/filter/converted")
+  .get(checkRole(["admin", "agent"]), getCustomersByDate);
 router
   .route("/:id/send-ticket-email")
   .post(upload.array("ticket", 50), sendTicketEmail);

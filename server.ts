@@ -17,6 +17,7 @@ import {
   userRoutes,
   refundRoutes,
   airlinesRoutes,
+  followupRoutes,
 } from "./routes";
 // Error catcher middleware import
 import { errorCatcher } from "./utils/errorCatcher";
@@ -61,6 +62,7 @@ app.use("/airports", airportRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/refund", refundRoutes);
 app.use("/airlines", airlinesRoutes);
+app.use("/followups", followupRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 4000;

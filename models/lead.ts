@@ -62,6 +62,7 @@ const LeadSchema: Schema = new Schema(
         "Payment Complete",
         "Ticket Sent",
         "cancelled",
+        "Sale Lost",
       ],
       default: "In Progress",
     },
@@ -141,6 +142,10 @@ const LeadSchema: Schema = new Schema(
     booking_id: {
       type: String,
       unique: true,
+    },
+
+    saleLostReason: {
+      type: String,
     },
     // Arbitrary key-value pairs for lead data
   },
