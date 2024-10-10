@@ -4,11 +4,31 @@ import Lead from "../models/lead";
 import { sendTicketConfirmationEmail } from "../services";
 import { AuthorizedRequest } from "../types";
 
+// Function to generate a unique booking ID
+const generateBookingId = async (): Promise<string> => {
+  const lastLead = await Lead.findOne({})
+    .sort({ createdAt: -1 }) // Get the last lead by creation date
+    .select("booking_id")
+    .exec();
+
+  let lastNumber = 1000; // Default starting point
+
+  if (lastLead && lastLead.booking_id) {
+    const lastBookingId = lastLead.booking_id;
+    const lastDigits = lastBookingId.replace("AT", ""); // Extract numeric part
+    lastNumber = parseInt(lastDigits, 10) + 1; // Increment the number
+  }
+
+  return `AT${lastNumber}`;
+};
+
 export const addLead = async (req: AuthorizedRequest, res: Response) => {
   try {
+    const booking_id = await generateBookingId();
+
     const leadDataFromBody = req.body;
 
-    let leadData = { ...leadDataFromBody, caseDate: new Date() };
+    let leadData = { ...leadDataFromBody, caseDate: new Date(), booking_id };
 
     if (req.user?.role === "agent") {
       leadData = { ...leadData, claimed_by: req.user._id };
@@ -64,7 +84,29 @@ export const claimLead = async (req: any, res: Response) => {
   }
 };
 
-export const addCallLog = async (req: Request, res: Response) => {
+export const assignLead = async (req: any, res: Response) => {
+  try {
+    const leadId = req.params.id;
+    const { userId } = req.body;
+
+    console.log(leadId, userId, "leadId, userId");
+    const updatedLead = await Lead.findByIdAndUpdate(
+      leadId,
+      { claimed_by: userId },
+      { new: true }
+    );
+
+    if (!updatedLead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+    res.status(200).json({ message: "Lead Assigned" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Failed to Assign lead" });
+  }
+};
+
+export const addCallLog = async (req: AuthorizedRequest, res: Response) => {
   try {
     const leadId = req.body.leadId;
     const callLogData = req.body;
@@ -75,7 +117,11 @@ export const addCallLog = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Lead not found" });
     }
 
-    lead.call_logs.push({ ...callLogData, leadId: null });
+    lead.call_logs.push({
+      ...callLogData,
+      added_by: req.user?.id,
+      leadId: null,
+    });
     await lead.save();
 
     res.status(200).json({
@@ -217,7 +263,7 @@ export const getLeadById = async (req: Request, res: Response) => {
     const leadId = req.params.id;
 
     const lead = await Lead.findById(leadId).populate(
-      "claimed_by departure arrival airline"
+      "claimed_by departure arrival airline call_logs.added_by"
     );
 
     if (!lead) {

@@ -85,6 +85,10 @@ const LeadSchema: Schema = new Schema(
           type: String,
           required: true,
         },
+        added_by: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+        },
       },
     ],
 
@@ -134,6 +138,10 @@ const LeadSchema: Schema = new Schema(
         type: String,
       },
     ],
+    booking_id: {
+      type: String,
+      unique: true,
+    },
     // Arbitrary key-value pairs for lead data
   },
   { strict: false }

@@ -2,6 +2,7 @@ import { Router, Request, Response } from "express";
 import {
   addCallLog,
   addLead,
+  assignLead,
   claimLead,
   convertLead,
   deleteLead,
@@ -32,9 +33,14 @@ router.route("/:id").get(getLeadById);
 router.route("/:id").put(editLead);
 router.route("/:id/claim-lead").post(checkRole(["admin", "agent"]), claimLead);
 router
+  .route("/:id/assign-lead")
+  .post(checkRole(["admin", "agent"]), assignLead);
+router
   .route("/:id/convert-lead")
   .post(checkRole(["admin", "agent"]), convertLead);
-router.route("/:id/add-call-log").put(addCallLog);
+router
+  .route("/:id/add-call-log")
+  .put(checkRole(["admin", "agent"]), addCallLog);
 router.route("/:id").delete(deleteLead);
 
 // Route to get leads by a specific user
