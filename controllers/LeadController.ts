@@ -93,7 +93,9 @@ export const sendPnrConfirmationEmail = async (req: Request, res: Response) => {
     const { pnr } = req.body;
 
     // Fetch lead details
-    const lead = await Lead.findById(leadId).populate("departure arrival");
+    const lead = await Lead.findById(leadId).populate(
+      "departure arrival airline"
+    );
 
     if (!lead) {
       return res.status(404).json({ message: "Lead not found" });
@@ -148,7 +150,7 @@ export const getAllLeads = async (req: Request, res: Response) => {
   try {
     const leads = await Lead.find()
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("claimed_by departure arrival");
+      .populate("claimed_by departure arrival airline");
 
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
@@ -160,7 +162,7 @@ export const getAllConvertedLeads = async (req: Request, res: Response) => {
   try {
     const convertedLeads = await Lead.find({ converted: true })
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("claimed_by departure arrival");
+      .populate("claimed_by departure arrival airline");
 
     res.status(200).json({
       message: "Successfully retrieved converted leads",
@@ -178,7 +180,7 @@ export const getAllCancelledLeads = async (req: Request, res: Response) => {
   try {
     const cancelledLeads = await Lead.find({ cancelled: true })
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("claimed_by departure arrival");
+      .populate("claimed_by departure arrival airline");
 
     res.status(200).json({
       message: "Successfully retrieved converted leads",
@@ -215,7 +217,7 @@ export const getLeadById = async (req: Request, res: Response) => {
     const leadId = req.params.id;
 
     const lead = await Lead.findById(leadId).populate(
-      "claimed_by departure arrival"
+      "claimed_by departure arrival airline"
     );
 
     if (!lead) {
@@ -234,7 +236,7 @@ export const getLeadsByUser = async (req: Request, res: Response) => {
 
     const leads = await Lead.find({ claimed_by: userId })
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("departure arrival claimed_by");
+      .populate("departure arrival claimed_by airline");
 
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
@@ -254,7 +256,7 @@ export const searchLeadByEmail = async (req: Request, res: Response) => {
     }
 
     const lead = await Lead.findOne({ email }).populate(
-      "claimed_by departure arrival"
+      "claimed_by departure arrival airline"
     );
 
     if (!lead) {

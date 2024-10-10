@@ -116,6 +116,11 @@ const LeadSchema: Schema = new Schema(
       type: Object,
     },
 
+    airline: {
+      type: Schema.Types.ObjectId,
+      ref: "Airline",
+    },
+
     converted: {
       type: Boolean,
       default: false,

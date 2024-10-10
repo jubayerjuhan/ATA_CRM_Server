@@ -40,7 +40,7 @@ export const getAllCustomers = async (
   try {
     const customers = await Lead.find({
       claimed_by: { $exists: true },
-    }).populate("claimed_by departure arrival");
+    }).populate("claimed_by departure arrival airline");
     const customersCount = customers.length;
 
     res.status(200).json({
