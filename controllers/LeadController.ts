@@ -314,3 +314,29 @@ export const searchLeadByEmail = async (req: Request, res: Response) => {
     res.status(500).json({ message: "Failed to retrieve lead", error });
   }
 };
+
+// Search by name or email
+export const globalSearch = async (req: Request, res: Response) => {
+  try {
+    const { search } = req.query;
+    console.log(search, "search");
+
+    const query: { [key: string]: any } = {};
+    if (search) {
+      const searchRegex = new RegExp(search as string, "i");
+      query["$or"] = [
+        { firstName: searchRegex },
+        { lastName: searchRegex },
+        { email: searchRegex },
+      ];
+    }
+
+    const leads = await Lead.find(query).populate(
+      "claimed_by departure arrival airline"
+    );
+
+    res.status(200).json({ message: "Successfully retrieved leads", leads });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to retrieve leads", error });
+  }
+};

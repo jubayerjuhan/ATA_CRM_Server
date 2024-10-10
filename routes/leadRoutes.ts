@@ -13,6 +13,7 @@ import {
   getLeadById,
   getLeadsByUser,
   searchLeadByEmail,
+  globalSearch,
   sendPnrConfirmationEmail,
 } from "../controllers/LeadController";
 import { checkRole } from "../middlewares";
@@ -48,6 +49,7 @@ router.route("/user/:userId").get(getLeadsByUser);
 
 // Search leads
 router.route("/search").post(searchLeadByEmail);
+router.route("/global-search/all-leads").get(globalSearch);
 
 // Send pnr confirmation email
 router.route("/:leadId/send-pnr-confirmation").post(sendPnrConfirmationEmail);
