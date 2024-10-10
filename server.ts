@@ -16,6 +16,7 @@ import {
   stripeWebhookRoutes,
   userRoutes,
   refundRoutes,
+  airlinesRoutes,
 } from "./routes";
 // Error catcher middleware import
 import { errorCatcher } from "./utils/errorCatcher";
@@ -59,6 +60,7 @@ app.use("/customers", customerRoutes);
 app.use("/airports", airportRoutes);
 app.use("/payment", paymentRoutes);
 app.use("/refund", refundRoutes);
+app.use("/airlines", airlinesRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 4000;

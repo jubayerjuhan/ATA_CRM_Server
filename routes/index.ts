@@ -7,6 +7,7 @@ import paymentRoutes from "./paymentRoutes";
 import stripeWebhookRoutes from "./stripeWebhookRoutes";
 import customerRoutes from "./customerRoutes";
 import refundRoutes from "./refundRoutes";
+import airlinesRoutes from "./airlinesRoutes";
 
 export {
   authRoutes,
@@ -18,4 +19,5 @@ export {
   stripeWebhookRoutes,
   customerRoutes,
   refundRoutes,
+  airlinesRoutes,
 };
