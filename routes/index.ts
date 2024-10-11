@@ -9,12 +9,14 @@ import customerRoutes from "./customerRoutes";
 import refundRoutes from "./refundRoutes";
 import airlinesRoutes from "./airlinesRoutes";
 import followupRoutes from "./followupRoutes";
+import emailRoutes from "./emailRoutes";
 
 export {
   authRoutes,
   userRoutes,
   formRoutes,
   leadRoutes,
+  emailRoutes,
   airportRoutes,
   paymentRoutes,
   stripeWebhookRoutes,

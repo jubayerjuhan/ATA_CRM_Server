@@ -75,10 +75,6 @@ const LeadSchema: Schema = new Schema(
 
     call_logs: [
       {
-        callType: {
-          type: String,
-          required: true,
-        },
         notes: {
           type: String,
         },
