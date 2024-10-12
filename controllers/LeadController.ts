@@ -197,7 +197,7 @@ export const getAllLeads = async (req: Request, res: Response) => {
     const leads = await Lead.find()
       .populate("call_logs.added_by claimed_by departure arrival airline")
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("claimed_by departure arrival airline");
+      .populate("call_logs.added_by claimed_by departure arrival airline");
 
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
@@ -209,7 +209,7 @@ export const getAllConvertedLeads = async (req: Request, res: Response) => {
   try {
     const convertedLeads = await Lead.find({ converted: true })
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("claimed_by departure arrival airline");
+      .populate("call_logs.added_by claimed_by departure arrival airline");
 
     res.status(200).json({
       message: "Successfully retrieved converted leads",
@@ -283,7 +283,7 @@ export const getLeadsByUser = async (req: Request, res: Response) => {
 
     const leads = await Lead.find({ claimed_by: userId })
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("departure arrival claimed_by airline");
+      .populate(" call_logs.added_by departure arrival claimed_by airline");
 
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
