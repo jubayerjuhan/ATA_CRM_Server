@@ -195,6 +195,7 @@ export const deleteLead = async (req: Request, res: Response) => {
 export const getAllLeads = async (req: Request, res: Response) => {
   try {
     const leads = await Lead.find()
+      .populate("call_logs.added_by claimed_by departure arrival airline")
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
       .populate("claimed_by departure arrival airline");
 
