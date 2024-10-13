@@ -302,9 +302,9 @@ export const searchLeadByEmail = async (req: Request, res: Response) => {
         .json({ message: "Email query parameter is required" });
     }
 
-    const lead = await Lead.findOne({ email }).populate(
-      "claimed_by departure arrival airline"
-    );
+    const lead = await Lead.findOne({ email })
+      .sort({ createdAt: -1 })
+      .populate("claimed_by departure arrival airline");
 
     if (!lead) {
       return res.status(404).json({ message: "Lead not found" });
@@ -329,6 +329,7 @@ export const globalSearch = async (req: Request, res: Response) => {
         { firstName: searchRegex },
         { lastName: searchRegex },
         { email: searchRegex },
+        { phone: searchRegex },
       ];
     }
 

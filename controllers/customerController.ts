@@ -200,27 +200,41 @@ export const getCustomersByDate = async (
     }
 
     // Query the leads where the payment date falls within the range
-    const leads = await Lead.find({
+    const totalLeads = await Lead.find({
       "payment.date": {
         $gte: start.toDate(),
         $lte: end.toDate(),
       },
-      "payment.status": "completed",
-      converted: true,
+    });
+
+    const userLeads = await Lead.find({
+      "payment.date": {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+      claimed_by: req.user?._id as string,
     });
 
     // Query the leads where the payment date falls within the range and status is cancelled
-    const cancelledLeads = await Lead.find({
+    const totalLostLeads = await Lead.find({
       "payment.date": {
         $gte: start.toDate(),
         $lte: end.toDate(),
       },
-      converted: false,
+      cancelled: true,
+    });
+
+    const userLostLeads = await Lead.find({
+      "payment.date": {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+      claimed_by: req.user?._id as string,
       cancelled: true,
     });
 
     // also see how many followups I have on that day
-    const followups = await Lead.find({
+    const totalFollowUps = await Lead.find({
       follow_up_date: {
         $gte: start.toDate(),
         $lte: end.toDate(),
@@ -239,18 +253,23 @@ export const getCustomersByDate = async (
     // loop through the leads and please make the sum of the total amount quoted_amount.total
     let totalAmount = 0;
 
-    leads.forEach((lead) => {
-      totalAmount += lead.quoted_amount.get("total");
-    });
+    if (req.user?.role === "admin") {
+      // Return the filtered leads
+      return res.status(200).json({
+        message: "Leads retrieved successfully",
+        leads: totalLeads.length,
+        lostLeads: totalLostLeads.length,
+        followUps: totalFollowUps.length,
+        myFollowups: myFollowups.length,
+      });
+    }
 
     // Return the filtered leads
     res.status(200).json({
       message: "Leads retrieved successfully",
-      leads,
-      cancelledLeads,
-      followups: followups.length,
+      leads: userLeads.length,
+      lostLeads: userLostLeads.length,
       myFollowups: myFollowups.length,
-      totalAmount,
     });
   } catch (error) {
     console.error("Error fetching leads:", error);
