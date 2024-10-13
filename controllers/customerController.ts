@@ -201,14 +201,31 @@ export const getCustomersByDate = async (
 
     // Query the leads where the payment date falls within the range
     const totalLeads = await Lead.find({
-      "payment.date": {
+      createdAt: {
         $gte: start.toDate(),
         $lte: end.toDate(),
       },
     });
 
-    const userLeads = await Lead.find({
+    const totalConvertedLeads = await Lead.find({
       "payment.date": {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+      converted: true,
+    });
+
+    const userConvertedLeads = await Lead.find({
+      "payment.date": {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+      claimed_by: req.user?._id as string,
+      converted: true,
+    });
+
+    const userLeads = await Lead.find({
+      createdAt: {
         $gte: start.toDate(),
         $lte: end.toDate(),
       },
@@ -217,7 +234,7 @@ export const getCustomersByDate = async (
 
     // Query the leads where the payment date falls within the range and status is cancelled
     const totalLostLeads = await Lead.find({
-      "payment.date": {
+      createdAt: {
         $gte: start.toDate(),
         $lte: end.toDate(),
       },
@@ -225,7 +242,7 @@ export const getCustomersByDate = async (
     });
 
     const userLostLeads = await Lead.find({
-      "payment.date": {
+      createdAt: {
         $gte: start.toDate(),
         $lte: end.toDate(),
       },
@@ -258,6 +275,7 @@ export const getCustomersByDate = async (
       return res.status(200).json({
         message: "Leads retrieved successfully",
         leads: totalLeads.length,
+        convertedLeads: totalConvertedLeads.length,
         lostLeads: totalLostLeads.length,
         followUps: totalFollowUps.length,
         myFollowups: myFollowups.length,
@@ -268,6 +286,7 @@ export const getCustomersByDate = async (
     res.status(200).json({
       message: "Leads retrieved successfully",
       leads: userLeads.length,
+      convertedLeads: userConvertedLeads.length,
       lostLeads: userLostLeads.length,
       myFollowups: myFollowups.length,
     });

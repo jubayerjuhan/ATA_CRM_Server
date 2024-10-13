@@ -15,6 +15,7 @@ import {
   searchLeadByEmail,
   globalSearch,
   sendPnrConfirmationEmail,
+  getMyOngoingList,
 } from "../controllers/LeadController";
 import { checkRole } from "../middlewares";
 
@@ -24,6 +25,9 @@ const router: Router = Router();
 // Define the routes
 router.route("/").post(checkRole(["admin", "agent"]), addLead);
 router.route("/").get(getAllLeads);
+router
+  .route("/my-leads/ongoing")
+  .get(checkRole(["admin", "agent"]), getMyOngoingList);
 router
   .route("/converted-leads/list")
   .get(checkRole(["admin", "agent"]), getAllConvertedLeads);

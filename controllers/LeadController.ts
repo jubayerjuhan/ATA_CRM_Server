@@ -277,6 +277,20 @@ export const getLeadById = async (req: Request, res: Response) => {
   }
 };
 
+export const getMyOngoingList = async (req: Request, res: Response) => {
+  try {
+    const userId = req.params.userId;
+
+    const leads = await Lead.find({ claimed_by: userId, converted: false })
+      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+      .populate("call_logs.added_by departure arrival claimed_by airline");
+
+    res.status(200).json({ message: "Successfully retrieved leads", leads });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to retrieve leads", error });
+  }
+};
+
 export const getLeadsByUser = async (req: Request, res: Response) => {
   try {
     const userId = req.params.userId;
