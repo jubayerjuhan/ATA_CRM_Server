@@ -102,6 +102,18 @@ const LeadSchema: Schema = new Schema(
       default: false,
     },
 
+    adult: {
+      type: Number,
+    },
+
+    child: {
+      type: Number,
+    },
+
+    infant: {
+      type: Number,
+    },
+
     follow_up_date: {
       type: Date,
     },
