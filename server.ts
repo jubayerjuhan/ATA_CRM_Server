@@ -19,6 +19,7 @@ import {
   airlinesRoutes,
   followupRoutes,
   emailRoutes,
+  whatsAppLeadRoutes,
 } from "./routes";
 // Error catcher middleware import
 import { errorCatcher } from "./utils/errorCatcher";
@@ -58,6 +59,7 @@ app.use("/auth", authRoutes);
 app.use("/user", userRoutes);
 app.use("/form", formRoutes);
 app.use("/leads", leadRoutes);
+app.use("/whatsapp-leads", whatsAppLeadRoutes);
 app.use("/customers", customerRoutes);
 app.use("/airports", airportRoutes);
 app.use("/payment", paymentRoutes);
