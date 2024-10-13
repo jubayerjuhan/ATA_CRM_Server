@@ -267,6 +267,21 @@ export const getCustomersByDate = async (
       claimed_by: req.user?._id as string,
     });
 
+    // how many converted leads I have on this month from 1st to 30th
+    const startOfMonth = moment().startOf("month").toDate();
+    const endOfMonth = moment().endOf("month").toDate();
+
+    const monthlyConvertedLeads = await Lead.find({
+      "payment.date": {
+        $gte: startOfMonth,
+        $lte: endOfMonth,
+      },
+      converted: true,
+    });
+
+    // Add the count of monthly converted leads to the response
+    const monthlyConvertedLeadsCount = monthlyConvertedLeads.length;
+
     // loop through the leads and please make the sum of the total amount quoted_amount.total
     let totalAmount = 0;
 
@@ -279,6 +294,7 @@ export const getCustomersByDate = async (
         lostLeads: totalLostLeads.length,
         followUps: totalFollowUps.length,
         myFollowups: myFollowups.length,
+        monthlyConvertedLeads: monthlyConvertedLeadsCount,
       });
     }
 
@@ -289,6 +305,7 @@ export const getCustomersByDate = async (
       convertedLeads: userConvertedLeads.length,
       lostLeads: userLostLeads.length,
       myFollowups: myFollowups.length,
+      monthlyConvertedLeads: monthlyConvertedLeadsCount,
     });
   } catch (error) {
     console.error("Error fetching leads:", error);

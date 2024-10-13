@@ -12,10 +12,10 @@ const router = express.Router();
 router
   .route("/")
   .post(checkRole(["admin", "agent"]), addWhatsAppLead)
-  .post(checkRole(["admin", "agent"]), getAllWhatsAppLeads);
+  .get(checkRole(["admin", "agent"]), getAllWhatsAppLeads);
 
 router
   .route("/my-leads")
-  .post(checkRole(["admin", "agent"]), getWhatsAppLeadsByUser);
+  .get(checkRole(["admin", "agent"]), getWhatsAppLeadsByUser);
 
 export default router;
