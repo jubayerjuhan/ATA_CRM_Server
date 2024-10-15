@@ -87,6 +87,31 @@ export const editLead = async (req: AuthorizedRequest, res: Response) => {
   }
 };
 
+export const selectPaymentMethod = async (
+  req: AuthorizedRequest,
+  res: Response
+) => {
+  try {
+    const leadId = req.params.id;
+    const { selectedPaymentMethod } = req.body;
+
+    const lead = await Lead.findById(leadId);
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    lead.selectedPaymentMethod = selectedPaymentMethod;
+    await lead.save();
+
+    res
+      .status(200)
+      .json({ message: "Payment method selected successfully", lead });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to select payment method", error });
+  }
+};
+
 export const claimLead = async (req: any, res: Response) => {
   try {
     const leadId = req.params.id;

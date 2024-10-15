@@ -17,6 +17,7 @@ import {
   sendPnrConfirmationEmail,
   getMyOngoingList,
   getUnclaimedLeads,
+  selectPaymentMethod,
 } from "../controllers/LeadController";
 import { checkRole } from "../middlewares";
 
@@ -40,6 +41,7 @@ router
   .get(checkRole(["admin", "agent"]), getAllCancelledLeads);
 router.route("/:id").get(getLeadById);
 router.route("/:id").put(checkRole(["admin", "agent"]), editLead);
+router.route("/:id/select-payment-method").put(selectPaymentMethod);
 router.route("/:id/claim-lead").post(checkRole(["admin", "agent"]), claimLead);
 router
   .route("/:id/assign-lead")
