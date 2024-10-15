@@ -16,6 +16,7 @@ import {
   globalSearch,
   sendPnrConfirmationEmail,
   getMyOngoingList,
+  getUnclaimedLeads,
 } from "../controllers/LeadController";
 import { checkRole } from "../middlewares";
 
@@ -24,6 +25,9 @@ const router: Router = Router();
 
 // Define the routes
 router.route("/").post(checkRole(["admin", "agent"]), addLead);
+router
+  .route("/unclaimed")
+  .get(checkRole(["admin", "agent"]), getUnclaimedLeads);
 router.route("/").get(getAllLeads);
 router
   .route("/my-leads/ongoing")
@@ -35,7 +39,7 @@ router
   .route("/cancelled-leads/list")
   .get(checkRole(["admin", "agent"]), getAllCancelledLeads);
 router.route("/:id").get(getLeadById);
-router.route("/:id").put(editLead);
+router.route("/:id").put(checkRole(["admin", "agent"]), editLead);
 router.route("/:id/claim-lead").post(checkRole(["admin", "agent"]), claimLead);
 router
   .route("/:id/assign-lead")

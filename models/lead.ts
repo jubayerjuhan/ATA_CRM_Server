@@ -30,6 +30,7 @@ const LeadSchema: Schema = new Schema(
     claimed_by: {
       type: Schema.Types.ObjectId,
       ref: "User",
+      default: null,
     },
     payment: {
       url: {

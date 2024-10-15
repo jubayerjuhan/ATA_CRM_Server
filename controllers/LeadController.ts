@@ -45,10 +45,31 @@ export const addLead = async (req: AuthorizedRequest, res: Response) => {
   }
 };
 
-export const editLead = async (req: Request, res: Response) => {
+export const getUnclaimedLeads = async (req: Request, res: Response) => {
+  try {
+    const unclaimedLeads = await Lead.find({ claimed_by: null })
+      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
+      .populate("departure arrival airline");
+
+    res.status(200).json({
+      message: "Successfully retrieved unclaimed leads",
+      leads: unclaimedLeads,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve unclaimed leads", error });
+  }
+};
+
+export const editLead = async (req: AuthorizedRequest, res: Response) => {
   try {
     const leadId = req.params.id;
-    const leadData = req.body;
+    let leadData = req.body;
+
+    if (req.user?.role === "agent") {
+      leadData = { ...leadData, claimed_by: req.user._id };
+    }
 
     const updatedLead = await Lead.findByIdAndUpdate(leadId, leadData, {
       new: true,
@@ -277,14 +298,21 @@ export const getLeadById = async (req: Request, res: Response) => {
   }
 };
 
-export const getMyOngoingList = async (req: Request, res: Response) => {
+export const getMyOngoingList = async (
+  req: AuthorizedRequest,
+  res: Response
+) => {
   try {
-    const userId = req.params.userId;
+    const userId = req.user?._id;
 
-    const leads = await Lead.find({ claimed_by: userId, converted: false })
+    console.log(userId, "userId");
+    const leads = await Lead.find({
+      claimed_by: userId,
+    })
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("call_logs.added_by departure arrival claimed_by airline");
+      .populate("call_logs.added_by departure arrival airline");
 
+    console.log(leads, "leads");
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
     res.status(500).json({ message: "Failed to retrieve leads", error });
