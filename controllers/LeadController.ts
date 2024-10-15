@@ -335,7 +335,7 @@ export const getMyOngoingList = async (
       claimed_by: userId,
     })
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("call_logs.added_by departure arrival airline");
+      .populate("call_logs.added_by departure arrival airline claimed_by");
 
     console.log(leads, "leads");
     res.status(200).json({ message: "Successfully retrieved leads", leads });

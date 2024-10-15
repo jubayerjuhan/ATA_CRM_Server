@@ -10,7 +10,13 @@ interface FormValues extends Document {
 const WhatsAppLeadSchema: Schema = new Schema({
   name: { type: String, required: true },
   phone: { type: String, required: true },
-  description: { type: String, required: true },
+  notes: [
+    {
+      text: { type: String, required: true },
+      added_by: { type: Schema.Types.ObjectId, ref: "User" },
+      addedAt: { type: Date, default: Date.now },
+    },
+  ],
   added_by: { type: Schema.Types.ObjectId, ref: "User" },
 });
 

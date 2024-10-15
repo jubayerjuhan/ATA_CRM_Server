@@ -14,12 +14,60 @@ export const addWhatsAppLead = async (
     const newLead = new WhatsAppLead({
       name,
       phone,
-      description,
+      notes: [
+        {
+          text: description,
+          added_by: req.user?._id,
+        },
+      ],
       added_by: req.user?._id,
     });
 
     await newLead.save();
     res.status(201).json(newLead);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Controller to get single lead with notes and added_by
+export const getWhatsAppLead = async (
+  req: AuthorizedRequest,
+  res: Response
+) => {
+  try {
+    const { id } = req.params;
+    const lead = await WhatsAppLead.findById(id).populate(
+      "added_by notes.added_by",
+      "name email"
+    );
+    res.json(lead);
+  } catch (err: any) {
+    res.status(500).json({ error: err.message });
+  }
+};
+
+// Controller to add a WhatsApp lead with notes
+export const addWhatsAppLeadWithNotes = async (
+  req: AuthorizedRequest,
+  res: Response
+) => {
+  try {
+    const { note } = req.body;
+    const { id } = req.params;
+    const lead = await WhatsAppLead.findByIdAndUpdate(
+      id,
+      {
+        $push: {
+          notes: {
+            text: note,
+            added_by: req.user?._id,
+          },
+        },
+      },
+      { new: true }
+    );
+    res.status(200).json(lead);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
@@ -43,10 +91,13 @@ export const getWhatsAppLeadsByUser = async (
   try {
     const added_by = req.user?._id;
 
-    const leads = await WhatsAppLead.find({ added_by }).populate(
-      "added_by",
-      "name email"
-    );
+    if (!added_by) {
+      return res.status(400).json({ error: "User ID is required" });
+    }
+
+    const leads = await WhatsAppLead.find({
+      added_by: added_by.toString(),
+    }).populate("added_by", "name email");
     res.json(leads);
   } catch (err: any) {
     res.status(500).json({ error: err.message });
