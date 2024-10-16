@@ -31,7 +31,7 @@ router
   .route("/filter/converted")
   .get(checkRole(["admin", "agent"]), getCustomersByDate);
 router
-  .route("/:id/send-ticket-email")
+  .route("/ticket/send-ticket-email")
   .post(upload.array("ticket", 50), sendTicketEmail);
 
 export default router;

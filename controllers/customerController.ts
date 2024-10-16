@@ -272,7 +272,7 @@ export const getCustomersByDate = async (
     const endOfMonth = moment().endOf("month").toDate();
 
     const monthlyConvertedLeads = await Lead.find({
-      "payment.date": {
+      createdAt: {
         $gte: startOfMonth,
         $lte: endOfMonth,
       },
