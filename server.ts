@@ -20,6 +20,7 @@ import {
   followupRoutes,
   emailRoutes,
   whatsAppLeadRoutes,
+  facebookLeadRoutes,
 } from "./routes";
 // Error catcher middleware import
 import { errorCatcher } from "./utils/errorCatcher";
@@ -67,6 +68,7 @@ app.use("/refund", refundRoutes);
 app.use("/airlines", airlinesRoutes);
 app.use("/followups", followupRoutes);
 app.use("/email", emailRoutes);
+app.use("/facebook-leads", facebookLeadRoutes);
 
 // Start the server
 const PORT = process.env.PORT || 4000;

@@ -11,6 +11,7 @@ import refundRoutes from "./refundRoutes";
 import airlinesRoutes from "./airlinesRoutes";
 import followupRoutes from "./followupRoutes";
 import emailRoutes from "./emailRoutes";
+import facebookLeadRoutes from "./facebookLeadRoutes";
 
 export {
   authRoutes,
@@ -26,4 +27,5 @@ export {
   refundRoutes,
   airlinesRoutes,
   followupRoutes,
+  facebookLeadRoutes,
 };
