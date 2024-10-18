@@ -11,10 +11,7 @@ import {
 const router = express.Router();
 
 // Route to get all WhatsApp leads
-router
-  .route("/")
-  .post(addFacebookLead)
-  .get(checkRole(["admin", "agent"]), getAllFacebookLeads);
+router.route("/").post(addFacebookLead).get(getAllFacebookLeads);
 
 // get single lead
 router
