@@ -161,3 +161,57 @@ const uploadTicket = async (
     throw error;
   }
 };
+
+const userAcknowledgementEmail = (lead: any) => {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h1 style="color: #333;">Hello ${lead.user?.name},</h1>
+      <p style="color: #333;">We have received your request and will get back to you shortly.</p>
+      <p style="color: #333;">Here are the details of your request:</p>
+      <ul style="color: #333;">
+        <li><strong>Destination:</strong> ${lead.destination}</li>
+        <li><strong>Departure Date:</strong> ${lead.departure_date}</li>
+        <li><strong>Return Date:</strong> ${lead.return_date}</li>
+        <li><strong>Passenger Count:</strong> ${lead.passenger_count}</li>
+        <li><strong>Class:</strong> ${lead.class}</li>
+        <li><strong>Budget:</strong> ${lead.budget}</li>
+      </ul>
+      <p style="color: #333;">We will keep you updated on the progress of your request.</p>
+      <p style="color: #333;">Thank you for choosing ATA CRM!</p>
+    </div>
+  `;
+};
+
+const sendAcknowledgementEmail = async (req: Request, res: Response) => {
+  const { email, leadId } = req.body;
+  const lead = await Lead.findById(leadId).populate("user");
+
+  const emailData = {
+    sender: {
+      name: "ATA CRM",
+      email: "jubayerjuhan.info@gmail.com",
+    },
+    to: [
+      {
+        email: email,
+        name: name,
+      },
+    ],
+    subject: "User Acknowledgement",
+    htmlContent: userAcknowledgementEmail(lead),
+  };
+
+  try {
+    const response = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      emailData,
+      {
+        headers: {
+          accept: "application/json",
+          "api-key": API_KEY,
+          "content-type": "application/json",
+        },
+      }
+    );
+  } catch (error) {}
+};

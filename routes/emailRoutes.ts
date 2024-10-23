@@ -14,5 +14,8 @@ const router: Router = Router();
 router
   .route("/send-email")
   .post(checkRole(["admin", "agent"]), upload.array("ticket", 50), sendEmail);
+router
+  .route("/send-acknowledgement-email")
+  .post(checkRole(["admin", "agent"]), upload.array("ticket", 50), sendEmail);
 
 export default router;
