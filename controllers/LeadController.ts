@@ -405,6 +405,49 @@ export const globalSearch = async (req: Request, res: Response) => {
       "claimed_by departure arrival airline"
     );
 
+    // Filter out duplicate emails, keeping only the latest one
+    const uniqueLeads = leads.reduce((acc: any[], lead: any) => {
+      const existingLeadIndex = acc.findIndex(
+        (item) => item.email === lead.email
+      );
+      if (existingLeadIndex === -1) {
+        acc.push(lead);
+      } else if (
+        new Date(lead.createdAt) > new Date(acc[existingLeadIndex].createdAt)
+      ) {
+        acc[existingLeadIndex] = lead;
+      }
+      return acc;
+    }, []);
+
+    res
+      .status(200)
+      .json({ message: "Successfully retrieved leads", leads: uniqueLeads });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to retrieve leads", error });
+  }
+};
+
+export const searchLeadsByEmail = async (req: Request, res: Response) => {
+  try {
+    const email = req.params.email;
+
+    if (!email) {
+      return res
+        .status(400)
+        .json({ message: "Email query parameter is required" });
+    }
+
+    const leads = await Lead.find({ email })
+      .sort({ createdAt: -1 })
+      .populate("claimed_by departure arrival airline");
+
+    if (leads.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No leads found with the provided email" });
+    }
+
     res.status(200).json({ message: "Successfully retrieved leads", leads });
   } catch (error) {
     res.status(500).json({ message: "Failed to retrieve leads", error });
