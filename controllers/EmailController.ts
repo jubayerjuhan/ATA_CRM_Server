@@ -165,7 +165,7 @@ const uploadTicket = async (
 const userAcknowledgementEmail = (lead: any) => {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h1 style="color: #333;">Hello ${lead.firstName},</h1>
+      <p style="color: #333;">Hello ${lead.firstName},</p>
       <p style="color: #333;">We have received your request and will get back to you shortly.</p>
       <p style="color: #333;">Your booking ID <strong>${lead.booking_id}</strong> has been acknowledged.</p>
       <p style="color: #333;">We will keep you updated on the progress of your request.</p>
@@ -177,7 +177,7 @@ const userAcknowledgementEmail = (lead: any) => {
 const adminNotificationEmail = (lead: any) => {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h1 style="color: #333;">A new booking request has been acknowledged</h1>
+      <p style="color: #333;">A new booking request has been acknowledged</p>
       <p style="color: #333;">A new booking request has been acknowledged with the following booking id :  ${lead.booking_id} </p>
       <p style="color: #333;">Please review and process this request as soon as possible.</p>
     </div>
