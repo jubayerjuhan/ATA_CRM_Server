@@ -74,7 +74,7 @@ export const sendEmail = async (req: Request, res: Response) => {
     ],
     cc: [
       {
-        email: "info@airwaystravel.com.au",
+        email: "tech@airwaystravel.com.au",
       },
     ],
     subject: subject,
