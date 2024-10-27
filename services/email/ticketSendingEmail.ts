@@ -14,7 +14,7 @@ export const ticketSendingEmail = async (
 ) => {
   const COMPANY_NAME = process.env.COMPANY_NAME
     ? process.env.COMPANY_NAME
-    : "ATA CRM Company";
+    : "ATA CRM";
 
   const data = {
     to: [{ email }],

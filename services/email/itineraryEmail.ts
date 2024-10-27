@@ -16,7 +16,7 @@ export const sendItineraryEmail = async (
 ) => {
   const COMPANY_NAME = process.env.COMPANY_NAME
     ? process.env.COMPANY_NAME
-    : "ATA CRM Company";
+    : "ATA CRM";
 
   // Flight data
   flights.forEach((flight: any) => {

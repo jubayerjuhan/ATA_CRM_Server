@@ -63,8 +63,8 @@ export const sendEmail = async (req: Request, res: Response) => {
 
   const emailData = {
     sender: {
-      name: "ATA CRM",
-      email: "jubayerjuhan.info@gmail.com",
+      name: "Airways Travel",
+      email: "info@airwaystravel.com.au",
     },
     to: [
       {
@@ -165,46 +165,74 @@ const uploadTicket = async (
 const userAcknowledgementEmail = (lead: any) => {
   return `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-      <h1 style="color: #333;">Hello ${lead.user?.name},</h1>
+      <h1 style="color: #333;">Hello ${lead.firstName},</h1>
       <p style="color: #333;">We have received your request and will get back to you shortly.</p>
-      <p style="color: #333;">Here are the details of your request:</p>
-      <ul style="color: #333;">
-        <li><strong>Destination:</strong> ${lead.destination}</li>
-        <li><strong>Departure Date:</strong> ${lead.departure_date}</li>
-        <li><strong>Return Date:</strong> ${lead.return_date}</li>
-        <li><strong>Passenger Count:</strong> ${lead.passenger_count}</li>
-        <li><strong>Class:</strong> ${lead.class}</li>
-        <li><strong>Budget:</strong> ${lead.budget}</li>
-      </ul>
+      <p style="color: #333;">Your booking ID <strong>${lead.booking_id}</strong> has been acknowledged.</p>
       <p style="color: #333;">We will keep you updated on the progress of your request.</p>
-      <p style="color: #333;">Thank you for choosing ATA CRM!</p>
+      <p style="color: #333;">Thank you for choosing Us!</p>
     </div>
   `;
 };
 
-const sendAcknowledgementEmail = async (req: Request, res: Response) => {
-  const { email, leadId } = req.body;
-  const lead = await Lead.findById(leadId).populate("user");
+const adminNotificationEmail = (lead: any) => {
+  return `
+    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+      <h1 style="color: #333;">A new booking request has been acknowledged</h1>
+      <p style="color: #333;">A new booking request has been acknowledged with the following booking id :  ${lead.booking_id} </p>
+      <p style="color: #333;">Please review and process this request as soon as possible.</p>
+    </div>
+  `;
+};
+
+export const sendAcknowledgementEmail = async (req: Request, res: Response) => {
+  const { leadId } = req.body;
+
+  const lead = await Lead.findById(leadId);
+
+  if (!lead) {
+    return res.status(404).json({ message: "Lead not found" });
+  }
 
   const emailData = {
     sender: {
-      name: "ATA CRM",
-      email: "jubayerjuhan.info@gmail.com",
+      name: "Airways Travel",
+      email: "info@airwaystravel.com.au",
     },
     to: [
       {
-        email: email,
-        name: name,
+        email: lead?.email,
+        name: lead?.firstName,
       },
     ],
-    subject: "User Acknowledgement",
+    subject: `Booking Acknowledgement - ${lead?.booking_id}`,
     htmlContent: userAcknowledgementEmail(lead),
   };
 
+  const notificationEmailData = {
+    sender: {
+      name: "Airways Travel",
+      email: "info@airwaystravel.com.au",
+    },
+    to: [
+      {
+        email: "dropshipninja23@gmail.com",
+      },
+    ],
+    subject: `Booking Acknowledgement - ${lead?.booking_id}`,
+    htmlContent: adminNotificationEmail(lead),
+  };
+
   try {
-    const response = await axios.post(
+    await axios.post("https://api.brevo.com/v3/smtp/email", emailData, {
+      headers: {
+        accept: "application/json",
+        "api-key": API_KEY,
+        "content-type": "application/json",
+      },
+    });
+    await axios.post(
       "https://api.brevo.com/v3/smtp/email",
-      emailData,
+      notificationEmailData,
       {
         headers: {
           accept: "application/json",
@@ -213,5 +241,7 @@ const sendAcknowledgementEmail = async (req: Request, res: Response) => {
         },
       }
     );
-  } catch (error) {}
+  } catch (error) {
+    console.error("Error sending email:", error);
+  }
 };

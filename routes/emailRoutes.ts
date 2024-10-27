@@ -1,6 +1,9 @@
 import { Router, Request, Response } from "express";
 import { checkRole } from "../middlewares";
-import { sendEmail } from "../controllers/EmailController";
+import {
+  sendAcknowledgementEmail,
+  sendEmail,
+} from "../controllers/EmailController";
 
 import multer from "multer";
 
@@ -16,6 +19,10 @@ router
   .post(checkRole(["admin", "agent"]), upload.array("ticket", 50), sendEmail);
 router
   .route("/send-acknowledgement-email")
-  .post(checkRole(["admin", "agent"]), upload.array("ticket", 50), sendEmail);
+  .post(
+    checkRole(["admin", "agent"]),
+    upload.array("ticket", 50),
+    sendAcknowledgementEmail
+  );
 
 export default router;

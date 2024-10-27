@@ -85,7 +85,7 @@ export const sendPasswordResetEmail = async (
                 <a href="${resetUrl}" class="button">Reset Password</a>
               </div>
               <p>If you did not request a password reset, please ignore this email or contact support if you have questions.</p>
-              <p>Thanks,<br>The ATA CRM Team</p>
+              <p>Thanks,<br>Airways Travel Team</p>
             </div>
             <div class="footer">
               <p>&copy; 2024 ATA CRM. All rights reserved.</p>

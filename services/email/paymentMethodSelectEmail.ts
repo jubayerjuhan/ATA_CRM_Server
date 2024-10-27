@@ -32,7 +32,7 @@ export const sendPaymentMethodSelectorEmail = async (
 ) => {
   const COMPANY_NAME = process.env.COMPANY_NAME
     ? process.env.COMPANY_NAME
-    : "ATA CRM Company";
+    : "ATA CRM";
 
   // Flight data
 
