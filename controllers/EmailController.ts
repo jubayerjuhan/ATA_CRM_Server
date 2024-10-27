@@ -72,6 +72,11 @@ export const sendEmail = async (req: Request, res: Response) => {
         name: name,
       },
     ],
+    cc: [
+      {
+        email: "info@airwaystravel.com.au",
+      },
+    ],
     subject: subject,
     htmlContent: updatedHtmlContent,
   };
@@ -204,23 +209,28 @@ export const sendAcknowledgementEmail = async (req: Request, res: Response) => {
         name: lead?.firstName,
       },
     ],
+    cc: [
+      {
+        email: "info@airwaystravel.com.au",
+      },
+    ],
     subject: `Booking Acknowledgement - ${lead?.booking_id}`,
     htmlContent: userAcknowledgementEmail(lead),
   };
 
-  const notificationEmailData = {
-    sender: {
-      name: "Airways Travel",
-      email: "info@airwaystravel.com.au",
-    },
-    to: [
-      {
-        email: "dropshipninja23@gmail.com",
-      },
-    ],
-    subject: `Booking Acknowledgement - ${lead?.booking_id}`,
-    htmlContent: adminNotificationEmail(lead),
-  };
+  // const notificationEmailData = {
+  //   sender: {
+  //     name: "Airways Travel",
+  //     email: "info@airwaystravel.com.au",
+  //   },
+  //   to: [
+  //     {
+  //       email: "dropshipninja23@gmail.com",
+  //     },
+  //   ],
+  //   subject: `Booking Acknowledgement - ${lead?.booking_id}`,
+  //   htmlContent: adminNotificationEmail(lead),
+  // };
 
   try {
     await axios.post("https://api.brevo.com/v3/smtp/email", emailData, {
@@ -230,17 +240,17 @@ export const sendAcknowledgementEmail = async (req: Request, res: Response) => {
         "content-type": "application/json",
       },
     });
-    await axios.post(
-      "https://api.brevo.com/v3/smtp/email",
-      notificationEmailData,
-      {
-        headers: {
-          accept: "application/json",
-          "api-key": API_KEY,
-          "content-type": "application/json",
-        },
-      }
-    );
+    // await axios.post(
+    //   "https://api.brevo.com/v3/smtp/email",
+    //   notificationEmailData,
+    //   {
+    //     headers: {
+    //       accept: "application/json",
+    //       "api-key": API_KEY,
+    //       "content-type": "application/json",
+    //     },
+    //   }
+    // );
   } catch (error) {
     console.error("Error sending email:", error);
   }
