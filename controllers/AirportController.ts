@@ -9,13 +9,7 @@ export const getAirports = async (req: Request, res: Response) => {
     const query: { [key: string]: any } = {};
 
     if (search) {
-      const searchRegex = new RegExp(search as string, "i");
-      query["$or"] = [
-        { name: searchRegex },
-        { code: searchRegex },
-        { city: searchRegex },
-        { state: searchRegex },
-      ];
+      query["code"] = { $regex: search, $options: "i" };
     }
 
     const airports = await Airport.find(query);

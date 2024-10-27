@@ -215,6 +215,21 @@ export const getCustomersByDate = async (
       converted: true,
     });
 
+    const totalConvertedLeadsByUser = await Lead.find({
+      "payment.date": {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+      claimed_by: req.user?._id as string,
+      converted: true,
+    });
+
+    let totalTicketByUser = 0;
+    totalConvertedLeadsByUser.forEach((lead) => {
+      totalTicketByUser += lead.adult;
+      totalTicketByUser += lead.child;
+    });
+
     const userConvertedLeads = await Lead.find({
       "payment.date": {
         $gte: start.toDate(),
@@ -291,10 +306,12 @@ export const getCustomersByDate = async (
         message: "Leads retrieved successfully",
         leads: totalLeads.length,
         convertedLeads: totalConvertedLeads.length,
+        totalConvertedLeadsByUser: totalConvertedLeadsByUser.length,
         lostLeads: totalLostLeads.length,
         followUps: totalFollowUps.length,
         myFollowups: myFollowups.length,
         monthlyConvertedLeads: monthlyConvertedLeadsCount,
+        totalTicketByUser,
       });
     }
 
@@ -302,10 +319,10 @@ export const getCustomersByDate = async (
     res.status(200).json({
       message: "Leads retrieved successfully",
       leads: userLeads.length,
-      convertedLeads: userConvertedLeads.length,
       lostLeads: userLostLeads.length,
       myFollowups: myFollowups.length,
-      monthlyConvertedLeads: monthlyConvertedLeadsCount,
+      totalConvertedLeadsByUser: totalConvertedLeadsByUser.length,
+      totalTicketByUser,
     });
   } catch (error) {
     console.error("Error fetching leads:", error);

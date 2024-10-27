@@ -8,11 +8,7 @@ export const getAirlines = async (req: Request, res: Response) => {
     const query: { [key: string]: any } = {};
     if (search) {
       const searchRegex = new RegExp(search as string, "i");
-      query["$or"] = [
-        { name: searchRegex },
-        { alias: searchRegex },
-        { icao: searchRegex },
-      ];
+      query["$or"] = [{ iata: searchRegex }];
     }
 
     const airlines = await Airline.find(query);

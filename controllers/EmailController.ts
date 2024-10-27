@@ -29,9 +29,12 @@ export const sendEmail = async (req: Request, res: Response) => {
   const files = req?.files as Express.Multer.File[];
   const ticketUrls = await uploadTicket(files);
 
+  const lead = await Lead.findById(leadId);
   // lead status
   const status =
-    emailType === "itinerary" ? "Itenary Email Sent" : "Ticket Sent";
+    emailType === "itinerary"
+      ? `Itenary Email Sent - Booking ID - ${lead?.booking_id}`
+      : `Ticket Sent - Booking ID - ${lead?.booking_id}`;
 
   let updatedHtmlContent = htmlContent;
 
