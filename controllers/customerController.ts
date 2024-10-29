@@ -15,6 +15,7 @@ import {
   GetObjectCommand,
   ObjectCannedACL,
 } from "@aws-sdk/client-s3";
+import { JSDOM } from "jsdom";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { ticketSendingEmail } from "../services/email/ticketSendingEmail";
 
@@ -32,6 +33,8 @@ const PNR_CONVERTER_PRIVATE_APP_KEY = process.env.PNR_CONVERTER_PRIVATE_APP_KEY;
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2024-06-20", // Use the latest API version
 });
+
+const parse = (html: any) => new JSDOM(html).window.document;
 
 export const getAllCustomers = async (
   req: AuthorizedRequest,
@@ -55,53 +58,52 @@ export const getAllCustomers = async (
 
 // Add splitted quoted amount here
 export const addQuotedAmount = async (req: Request, res: Response) => {
+  const { quotedAmount } = req.body;
+  const centAmount = quotedAmount * 100;
+
+  if (!quotedAmount) {
+    return res.status(400).json({ message: "Quoted amount is required" });
+  }
+
   try {
-    console.log(req.body);
-    const { quotedAmount } = req.body;
-
-    if (!quotedAmount) {
-      return res.status(400).json({ message: "Quoted amount is required" });
-    }
-
-    console.log(quotedAmount, "Quoted Amount");
-
     const leadId = req.params.id;
-
     const lead = await Lead.findById(leadId);
 
     if (!lead) {
       return res.status(404).json({ message: "Lead not found" });
     }
 
-    // create stripe checkout session here
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      metadata: { leadId },
-      line_items: [
-        {
-          price_data: {
-            currency: "usd",
-            unit_amount: quotedAmount.total * 100,
-            product_data: {
-              name: "Payment",
-            },
-          },
-          quantity: 1,
-        },
-      ],
-      mode: "payment",
-      success_url: `${process.env.FRONTEND_URL_PROD}/payment-success`,
-      cancel_url: `${process.env.FRONTEND_URL_PROD}/payment-failed`,
+    const url = "https://api.staging.slicepay.travel/api/create-link";
+    const response = await fetch(url, {
+      method: "POST",
+      headers: {
+        Accept: "text/html",
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: new URLSearchParams({
+        salePrice: String(centAmount),
+        currency: "AUD",
+        departureDate: moment(lead.travelDate).format("YYYY-MM-DD"),
+        bookingReference: lead.booking_id as string,
+        agentId: "agent-saurabh-6djdfg",
+      }).toString(),
     });
 
-    lead.quoted_amount = quotedAmount;
-    lead.stripe_payment_link = session.url;
+    // Response Handling
+    const responseBody = await response.text();
+    const paymentLinkElement = parse(responseBody).querySelector(
+      'a[name="payment-link"]'
+    ) as HTMLAnchorElement | null;
+    const paymentLinkHref = paymentLinkElement?.href;
 
-    console.log(lead, "Lead");
+    lead.quoted_amount = quotedAmount;
+    lead.stripe_payment_link = paymentLinkHref;
+
     await lead.save();
 
     res.status(200).json({ message: "Quoted amount added successfully" });
   } catch (error) {
+    console.log(error, "Error...");
     res.status(500).json({ message: "Failed to add quoted amount", error });
   }
 };

@@ -23,18 +23,21 @@ const s3Client = new S3Client({
 });
 
 export const sendEmail = async (req: Request, res: Response) => {
-  const { htmlContent, email, name, subject, leadId, emailType } = req.body;
+  const { htmlContent, email, name, leadId, emailType } = req.body;
   const apiKey = API_KEY;
 
   const files = req?.files as Express.Multer.File[];
   const ticketUrls = await uploadTicket(files);
 
   const lead = await Lead.findById(leadId);
+  const subject =
+    emailType === "itinerary"
+      ? `Your Itinerary - Booking ID - ${lead?.booking_id}`
+      : `Your Ticket - Booking ID - ${lead?.booking_id}`;
+
   // lead status
   const status =
-    emailType === "itinerary"
-      ? `Itenary Email Sent - Booking ID - ${lead?.booking_id}`
-      : `Ticket Sent - Booking ID - ${lead?.booking_id}`;
+    emailType === "itinerary" ? `Itenary Email Sent` : `Ticket Sent`;
 
   let updatedHtmlContent = htmlContent;
 
