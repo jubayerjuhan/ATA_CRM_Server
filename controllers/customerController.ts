@@ -59,7 +59,7 @@ export const getAllCustomers = async (
 // Add splitted quoted amount here
 export const addQuotedAmount = async (req: Request, res: Response) => {
   const { quotedAmount } = req.body;
-  const centAmount = quotedAmount * 100;
+  const centAmount = Number(quotedAmount.total) * 100;
 
   if (!quotedAmount) {
     return res.status(400).json({ message: "Quoted amount is required" });
@@ -88,6 +88,16 @@ export const addQuotedAmount = async (req: Request, res: Response) => {
         agentId: "agent-saurabh-6djdfg",
       }).toString(),
     });
+
+    console.log(
+      new URLSearchParams({
+        salePrice: String(centAmount),
+        currency: "AUD",
+        departureDate: moment(lead.travelDate).format("YYYY-MM-DD"),
+        bookingReference: lead.booking_id as string,
+        agentId: "agent-saurabh-6djdfg",
+      }).toString()
+    );
 
     // Response Handling
     const responseBody = await response.text();
