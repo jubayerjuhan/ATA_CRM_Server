@@ -241,7 +241,6 @@ export const deleteLead = async (req: Request, res: Response) => {
 export const getAllLeads = async (req: Request, res: Response) => {
   try {
     const leads = await Lead.find()
-      .populate("call_logs.added_by claimed_by departure arrival airline")
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
       .populate("call_logs.added_by claimed_by departure arrival airline");
 
@@ -425,6 +424,29 @@ export const globalSearch = async (req: Request, res: Response) => {
       .json({ message: "Successfully retrieved leads", leads: uniqueLeads });
   } catch (error) {
     res.status(500).json({ message: "Failed to retrieve leads", error });
+  }
+};
+
+export const processPayment = async (req: Request, res: Response) => {
+  try {
+    const leadId = req.params.id;
+
+    const lead = await Lead.findById(leadId);
+
+    if (!lead) {
+      return res.status(404).json({ message: "Lead not found" });
+    }
+
+    lead.payment = {
+      status: "completed",
+      date: new Date(),
+    };
+    lead.status = "Payment Complete";
+    await lead.save();
+
+    res.status(200).json({ message: "Payment processed successfully", lead });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to process payment", error });
   }
 };
 

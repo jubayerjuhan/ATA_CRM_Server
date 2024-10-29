@@ -19,6 +19,7 @@ import {
   getUnclaimedLeads,
   selectPaymentMethod,
   searchLeadsByEmail,
+  processPayment,
 } from "../controllers/LeadController";
 import { checkRole } from "../middlewares";
 
@@ -62,6 +63,7 @@ router.route("/user/:userId").get(getLeadsByUser);
 router.route("/search").post(searchLeadByEmail);
 router.route("/global-search/all-leads").get(globalSearch);
 router.route("/lead-search/:email").get(searchLeadsByEmail);
+router.route("/:id/process-payment").post(processPayment);
 
 // Send pnr confirmation email
 router.route("/:leadId/send-pnr-confirmation").post(sendPnrConfirmationEmail);

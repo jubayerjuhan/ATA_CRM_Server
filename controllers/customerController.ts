@@ -73,7 +73,7 @@ export const addQuotedAmount = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Lead not found" });
     }
 
-    const url = " https://api.slicepay.travel/api/create-link";
+    const url = " https://api.staging.slicepay.travel/api/create-link";
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -86,18 +86,9 @@ export const addQuotedAmount = async (req: Request, res: Response) => {
         departureDate: moment(lead.travelDate).format("YYYY-MM-DD"),
         bookingReference: lead.booking_id as string,
         agentId: "agent-saurabh-6djdfg",
+        redirectUrlSucceeded: `https://crmairwaystravel.com.au/payment-processing/${lead._id}`,
       }).toString(),
     });
-
-    console.log(
-      new URLSearchParams({
-        salePrice: String(centAmount),
-        currency: "AUD",
-        departureDate: moment(lead.travelDate).format("YYYY-MM-DD"),
-        bookingReference: lead.booking_id as string,
-        agentId: "agent-saurabh-6djdfg",
-      }).toString()
-    );
 
     // Response Handling
     const responseBody = await response.text();
