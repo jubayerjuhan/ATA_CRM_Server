@@ -8,6 +8,12 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
   apiVersion: "2024-06-20", // Use the latest API version
 });
 
+export const handleSlicePayment = async (req: Request, res: Response) => {
+  console.log("Slice Payment Request", req.body);
+
+  res.json({ message: "Slice Payment Request Received", success: true });
+};
+
 export const createAndSendPaymentLink = async (req: Request, res: Response) => {
   try {
     // Extract amount and currency from the request body
