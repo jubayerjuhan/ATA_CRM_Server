@@ -73,7 +73,7 @@ export const addQuotedAmount = async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Lead not found" });
     }
 
-    const url = "https://api.staging.slicepay.travel/api/create-link";
+    const url = " https://api.slicepay.travel/api/create-link";
     const response = await fetch(url, {
       method: "POST",
       headers: {
@@ -95,6 +95,7 @@ export const addQuotedAmount = async (req: Request, res: Response) => {
       'a[name="payment-link"]'
     ) as HTMLAnchorElement | null;
     const paymentLinkHref = paymentLinkElement?.href;
+    console.log(paymentLinkHref, "Payment Link");
 
     lead.quoted_amount = quotedAmount;
     lead.stripe_payment_link = paymentLinkHref;
