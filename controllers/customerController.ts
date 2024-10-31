@@ -61,49 +61,52 @@ export const getUniqueCustomers = async (
   req: AuthorizedRequest,
   res: Response
 ) => {
-  try {
-    // Get all leads and sort by createdAt in descending order
-    const allLeads = await Lead.find()
-      .sort({ createdAt: -1 })
-      .populate("claimed_by departure arrival airline");
+  const allLeads = await Lead.find().sort({ createdAt: 1 }); // Sort by creation date
 
-    // Create a map to store unique customers by email
-    const uniqueCustomersMap = new Map();
+  const customerMap = new Map<string, any>();
 
-    // Create a map to count leads per email
-    const leadCountByEmail = new Map();
+  // Loop through the leads and group them by email
+  allLeads.forEach((lead) => {
+    const key = lead.email;
 
-    allLeads.forEach((lead) => {
-      if (lead.email) {
-        // Count leads per email
-        leadCountByEmail.set(
-          lead.email,
-          (leadCountByEmail.get(lead.email) || 0) + 1
-        );
+    if (customerMap.has(key)) {
+      const existingLead = customerMap.get(key);
+      const newLead = lead;
 
-        // Keep only the most recent lead for each email
-        if (!uniqueCustomersMap.has(lead.email)) {
-          uniqueCustomersMap.set(lead.email, {
-            ...lead.toObject(),
-            totalLeads: leadCountByEmail.get(lead.email),
-          });
-        }
+      // Check if the new lead is the first lead
+      if (newLead.createdAt < existingLead.firstLead.createdAt) {
+        existingLead.firstLead = newLead;
       }
-    });
 
-    const uniqueCustomers = Array.from(uniqueCustomersMap.values());
+      // Check if the new lead is the latest lead
+      if (newLead.createdAt > existingLead.latestLead.createdAt) {
+        existingLead.latestLead = newLead;
+      }
 
-    res.status(200).json({
-      message: "Unique Customers Retrieved Successfully",
-      customers: uniqueCustomers,
-      customersCount: uniqueCustomers.length,
-    });
-  } catch (error) {
-    res
-      .status(500)
-      .json({ message: "Failed to retrieve unique customers", error });
-  }
+      // Increment the total leads
+      existingLead.totalLeads += 1;
+
+      // Update the map
+      customerMap.set(key, existingLead);
+    } else {
+      customerMap.set(key, {
+        firstLead: lead,
+        latestLead: lead,
+        totalLeads: 1,
+      });
+    }
+  });
+
+  // Convert the Map to an array of values for the response
+  const customerStats = Array.from(customerMap.values());
+
+  res.status(200).json({
+    message: "Customer Statistics Retrieved Successfully",
+    customers: customerStats,
+    customersCount: customerStats.length,
+  });
 };
+
 export const addQuotedAmount = async (req: Request, res: Response) => {
   const { quotedAmount } = req.body;
   const centAmount = Number(quotedAmount.total) * 100;
