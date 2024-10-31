@@ -8,6 +8,7 @@ import {
   addQuotedAmount,
   getAllCustomers,
   getCustomersByDate,
+  getUniqueCustomers,
   sendItineraryEmailController,
   sendTicketEmail,
 } from "../controllers/customerController";
@@ -21,6 +22,9 @@ const router: Router = Router();
 
 // Define the routes
 router.route("/").get(checkRole(["admin", "agent"]), getAllCustomers);
+router
+  .route("/unique-customers")
+  .get(checkRole(["admin", "agent"]), getUniqueCustomers);
 router
   .route("/:id/add-quoted-amount")
   .put(checkRole(["admin", "agent"]), addQuotedAmount);

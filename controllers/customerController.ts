@@ -57,6 +57,53 @@ export const getAllCustomers = async (
 };
 
 // Add splitted quoted amount here
+export const getUniqueCustomers = async (
+  req: AuthorizedRequest,
+  res: Response
+) => {
+  try {
+    // Get all leads and sort by createdAt in descending order
+    const allLeads = await Lead.find()
+      .sort({ createdAt: -1 })
+      .populate("claimed_by departure arrival airline");
+
+    // Create a map to store unique customers by email
+    const uniqueCustomersMap = new Map();
+
+    // Create a map to count leads per email
+    const leadCountByEmail = new Map();
+
+    allLeads.forEach((lead) => {
+      if (lead.email) {
+        // Count leads per email
+        leadCountByEmail.set(
+          lead.email,
+          (leadCountByEmail.get(lead.email) || 0) + 1
+        );
+
+        // Keep only the most recent lead for each email
+        if (!uniqueCustomersMap.has(lead.email)) {
+          uniqueCustomersMap.set(lead.email, {
+            ...lead.toObject(),
+            totalLeads: leadCountByEmail.get(lead.email),
+          });
+        }
+      }
+    });
+
+    const uniqueCustomers = Array.from(uniqueCustomersMap.values());
+
+    res.status(200).json({
+      message: "Unique Customers Retrieved Successfully",
+      customers: uniqueCustomers,
+      customersCount: uniqueCustomers.length,
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ message: "Failed to retrieve unique customers", error });
+  }
+};
 export const addQuotedAmount = async (req: Request, res: Response) => {
   const { quotedAmount } = req.body;
   const centAmount = Number(quotedAmount.total) * 100;
