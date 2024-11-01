@@ -61,7 +61,7 @@ export const getUniqueCustomers = async (
   req: AuthorizedRequest,
   res: Response
 ) => {
-  const allLeads = await Lead.find().sort({ createdAt: 1 }); // Sort by creation date
+  const allLeads = await Lead.find().sort({ createdAt: 1 }).populate("arrival"); // Sort by creation date
 
   const customerMap = new Map<string, any>();
 
