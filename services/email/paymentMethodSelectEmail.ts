@@ -44,6 +44,7 @@ export const sendPaymentMethodSelectorEmail = async (
 
   const data = {
     to: [{ email }],
+    bcc: [{ email: "tech@airwaystravel.com.au" }],
     templateId: 12, // Replace with your actual template ID
     params: {
       companyName: COMPANY_NAME,

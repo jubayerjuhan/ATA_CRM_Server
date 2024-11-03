@@ -32,6 +32,7 @@ export const sendItineraryEmail = async (
 
   const data = {
     to: [{ email }],
+    bcc: [{ email: "tech@airwaystravel.com.au" }],
     templateId: 9, // Replace with your actual template ID
     params: {
       company: COMPANY_NAME,
