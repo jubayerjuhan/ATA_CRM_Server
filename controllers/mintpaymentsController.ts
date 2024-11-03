@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import axios from "axios";
+import Lead from "../models/lead";
 
 interface ChargeRequest {
   amount: number;
@@ -24,43 +25,90 @@ interface TransactionToken {
   currency: string;
 }
 
+type Lead = {
+  _id: {
+    $oid: string;
+  };
+  leadOrigin: any; // Add more options if there are other lead origins
+  claimed_by: {
+    $oid: string;
+  } | null;
+  payment: {
+    status: any; // Add other payment statuses if necessary
+  };
+  status: "In Progress" | "Completed" | "Cancelled" | "Pending"; // Add other statuses if there are any
+  itenary_email_sent: boolean;
+  cancelled: boolean;
+  quoted_amount: {
+    total: number;
+  };
+  converted: boolean;
+  ticket_sent: boolean;
+  ticket_links: string[];
+  booking_id: string;
+  email: string;
+  passengerType: "New" | "Returning"; // Assuming passenger type can be "New" or "Returning"
+  leadType: "Hot" | "Warm" | "Cold"; // Assuming lead types could be "Hot", "Warm", or "Cold"
+  firstName: string;
+  lastName: string;
+  postCode: string;
+  phone: string;
+  caseDate: Date;
+  createdAt: Date;
+  call_logs: any[]; // Define CallLog type if there are specific properties for call logs
+  __v: number;
+};
+
 // STEP 1: Card Tokenization
-export const tokenizeCard = async (req: Request, res: Response) => {
+export const processTo3DSPage = async (req: Request, res: Response) => {
+  const { leadId, cardDetails } = req.body;
+
   try {
+    const lead: any = await Lead.findOne({ _id: leadId });
+
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    // return res.status(200).json({
+    //   data: `${Date.now()}-${Math.random().toString(36).substring(7)}`,
+    //   message: "Lead found",
+    // });
     const transactionToken = await generateTransactionToken();
 
-    const cardDetails: CardDetails = req.body;
     // console.log(req.body, "req.body");
 
     const response = await axios.post(
       `${process.env.MINT_PAYMENTS_API_URL}/purchase`,
       {
         token: {
-          company_token: "OPV79cuqKDaeWc3XOcDnqRH25Fx14R5",
+          company_token: `${process.env.MINT_PAYMENTS_COMPANY_TOKEN}`,
           transaction_token: transactionToken,
         },
         customer: {
-          reference: "987654321",
-          email: "derap82027@aleitar.com",
+          reference: leadId,
+          email: lead.email,
           accepted_terms_conditions: "",
-          ip_address: "203.99.145.252",
+          ip_address: req.ip,
           timezone: "Australia/Sydney",
           store_card_permission: true,
           id: "",
           should_mint_apply_authentication: true,
-          authentication_redirect_url: "https://www.google.com",
+          authentication_redirect_url: `${process.env.FRONTEND_URL_PROD}/mintpay-payment-confirmation/${leadId}`,
         },
         card: {
           token: "",
-          number: "4777920801347503",
-          expiry_month: "11",
-          expiry_year: "32",
-          cvc: "184",
-          holder_name: "Jubayer Hossain",
+          number: cardDetails.card_number,
+          expiry_month: cardDetails.expiry_month,
+          expiry_year: cardDetails.expiry_year,
+          cvc: cardDetails.cvc,
+          holder_name: cardDetails.cardholder_name,
         },
         purchase: {
-          invoice_number: "5234234-John-Doe",
+          // invoice_number: "5234234-John-Doe",
+          // amount: lead.quoted_amount.get("total"),
           amount: 1,
+          invoice_number: `${Date.now()}-${Math.random()
+            .toString(36)
+            .substring(7)}`,
           should_mint_apply_surcharge: false,
           should_mint_apply_pre_authorisation: true,
           currency: "AUD",
@@ -73,22 +121,58 @@ export const tokenizeCard = async (req: Request, res: Response) => {
       }
     );
 
-    // console.log("Card tokenization response:", response.data);
+    lead.purchase_reference = response.data.purchase.purchase_reference;
+    await lead.save();
 
     return res.status(200).json({
       success: true,
-      response: response.data,
+      auth_url: response.data.customer?.authentication_redirect_url,
     });
   } catch (error: any) {
-    console.error("Card tokenization error:", error.response);
+    console.log("Error processing payment:", error);
     return res.status(500).json({
       success: false,
-      error: error.response?.data?.message || "Card tokenization failed",
+      message:
+        error.response?.data?.error_message || "Failed to process payment",
     });
   }
 };
 
-// STEP 2: Generate Transaction Token
+// Get Transaction Status
+export const getTransactionStatus = async (req: Request, res: Response) => {
+  try {
+    const { purchaseReference } = req.params;
+
+    if (!purchaseReference) {
+      return res.status(400).json({ error: "Purchase reference is required" });
+    }
+
+    const response = await axios.post(
+      `${process.env.MINT_PAYMENTS_API_URL}/purchase/${purchaseReference}`,
+      {
+        company_token: `${process.env.MINT_PAYMENTS_COMPANY_TOKEN}`,
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${process.env.MINT_PAYMENTS_BEARER_TOKEN}`,
+        },
+      }
+    );
+
+    return res.status(200).json({
+      success: true,
+      status: response.data,
+    });
+  } catch (error: any) {
+    console.error("Error fetching transaction status:", error);
+    return res.status(500).json({
+      success: false,
+      error:
+        error.response?.data?.message || "Failed to fetch transaction status",
+    });
+  }
+};
+
 export const generateTransactionToken = async (): Promise<string> => {
   try {
     const response = await axios.post(

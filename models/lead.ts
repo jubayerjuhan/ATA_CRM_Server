@@ -1,6 +1,6 @@
 import mongoose, { Schema, Document } from "mongoose";
 
-interface ILead extends Document {
+export interface ILead extends Document {
   [key: string]: any; // Allows storing any key-value pair based on the fields
   createdAt: Date;
   claimed_by: string;
@@ -156,8 +156,12 @@ const LeadSchema: Schema = new Schema(
     saleLostReason: {
       type: String,
     },
+    purchase_reference: {
+      type: String,
+    },
     // Arbitrary key-value pairs for lead data
   },
+
   { strict: false }
 );
 
