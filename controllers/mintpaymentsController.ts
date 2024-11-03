@@ -138,15 +138,28 @@ export const processTo3DSPage = async (req: Request, res: Response) => {
   }
 };
 
-// Get Transaction Status
-export const getTransactionStatus = async (req: Request, res: Response) => {
+// Confirm mintpayment payment status
+export const confirmMintpaymentTransaction = async (
+  req: Request,
+  res: Response
+) => {
   try {
-    const { purchaseReference } = req.params;
+    const { leadId } = req.params;
+    if (!leadId) {
+      return res.status(400).json({ error: "Lead Id is required" });
+    }
 
+    // Find lead by ID
+    const lead: any = await Lead.findOne({ _id: leadId });
+    if (!lead) return res.status(404).json({ message: "Lead not found" });
+
+    // Check if purchase reference is available
+    const purchaseReference = lead.purchase_reference;
     if (!purchaseReference) {
       return res.status(400).json({ error: "Purchase reference is required" });
     }
 
+    // Fetch transaction status
     const response = await axios.post(
       `${process.env.MINT_PAYMENTS_API_URL}/purchase/${purchaseReference}`,
       {
@@ -159,12 +172,22 @@ export const getTransactionStatus = async (req: Request, res: Response) => {
       }
     );
 
+    if (response.data.status === "APPROVED") {
+      lead.payment.status = "completed";
+      lead.payment.date = new Date();
+      await lead.save();
+
+      return res.status(200).json({
+        success: true,
+        payment_status: response.data.status,
+      });
+    }
+
     return res.status(200).json({
       success: true,
-      status: response.data,
+      payment_status: response.data.status,
     });
   } catch (error: any) {
-    console.error("Error fetching transaction status:", error);
     return res.status(500).json({
       success: false,
       error:

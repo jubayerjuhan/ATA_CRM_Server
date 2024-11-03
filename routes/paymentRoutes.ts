@@ -6,8 +6,8 @@ import {
   retrivePaymentInformation,
 } from "../controllers/PaymentController";
 import {
+  confirmMintpaymentTransaction,
   createTransactionToken,
-  getTransactionStatus,
   processTo3DSPage,
 } from "../controllers/mintpaymentsController";
 // Create a new router for auth routes
@@ -17,8 +17,8 @@ const router: Router = Router();
 router.route("/create-payment-link").post(createAndSendPaymentLink);
 router.route("/mint-pay/process-3ds").post(processTo3DSPage);
 router
-  .route("/mint-pay/get-transaction-status/:purchaseReference")
-  .get(getTransactionStatus);
+  .route("/mint-pay/confirm-payment/:leadId")
+  .post(confirmMintpaymentTransaction);
 router.route("/mint-pay/create-transaction-token").post(createTransactionToken);
 router.route("/successfull-slicepay-payment").post(handleSlicePayment);
 router.route("/check-payment-status/:sessionId").get(retrivePaymentInformation);
