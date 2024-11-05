@@ -1,6 +1,7 @@
+import axios from "axios";
 import { Resend } from "resend";
 
-const resend = new Resend(process.env.RESEND_API_KEY);
+const API_KEY = process.env.BREVO_API_KEY as string;
 
 const frontendUrl =
   process.env.NODE_ENV === "production"
@@ -11,17 +12,23 @@ export const sendPasswordResetEmail = async (
   email: string,
   resetUrl: string
 ) => {
-  email =
-    process.env.NODE_ENV === "production"
-      ? email
-      : (process.env.RESEND_TEST_EMAIL as string);
-
-  try {
-    const data = await resend.emails.send({
-      from: "ATA CRM <onboarding@resend.dev>",
-      to: [email],
-      subject: "Password Reset Request",
-      html: `
+  const emailData = {
+    sender: {
+      name: "Airways Travel",
+      email: "info@airwaystravel.com.au",
+    },
+    to: [
+      {
+        email: email,
+      },
+    ],
+    cc: [
+      {
+        email: "tech@airwaystravel.com.au",
+      },
+    ],
+    subject: "Password Reset Request",
+    htmlContent: `
         <!DOCTYPE html>
         <html lang="en">
         <head>
@@ -94,9 +101,26 @@ export const sendPasswordResetEmail = async (
         </body>
         </html>
       `,
-    });
-    console.log(data, "data...");
-  } catch (error) {
-    console.log(error, "Error...");
+  };
+
+  try {
+    const response = await axios.post(
+      "https://api.brevo.com/v3/smtp/email",
+      emailData,
+      {
+        headers: {
+          accept: "application/json",
+          "api-key": API_KEY,
+          "content-type": "application/json",
+        },
+      }
+    );
+
+    console.log("Email sent successfully. MessageId:", response, email);
+  } catch (error: any) {
+    console.error(
+      "Error sending email:",
+      error.response ? error.response.data : error.message
+    );
   }
 };

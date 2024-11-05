@@ -36,6 +36,30 @@ export const getAllUsers = async (
   }
 };
 
+export const changeUserRole = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  const { userId } = req.params;
+  const { role } = req.body;
+
+  try {
+    const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    user.role = role;
+    await user.save();
+
+    res.status(200).json({ message: "User role updated successfully" });
+  } catch (error: any) {
+    next(error);
+  }
+};
+
 export const getUsersOverview = async (
   req: AuthorizedRequest,
   res: Response
