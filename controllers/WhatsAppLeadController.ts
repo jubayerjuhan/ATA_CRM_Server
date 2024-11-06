@@ -76,7 +76,9 @@ export const addWhatsAppLeadWithNotes = async (
 // Controller to get all WhatsApp leads, sorted by latest added first
 export const getAllWhatsAppLeads = async (req: Request, res: Response) => {
   try {
-    const leads = await WhatsAppLead.find().sort({ createdAt: -1 });
+    const leads = await WhatsAppLead.find()
+      .sort({ createdAt: -1 })
+      .populate("added_by", "name email");
     res.json(leads);
   } catch (err: any) {
     res.status(500).json({ error: err.message });

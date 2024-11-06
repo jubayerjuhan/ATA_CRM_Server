@@ -430,6 +430,7 @@ export const globalSearch = async (req: Request, res: Response) => {
 export const processPayment = async (req: Request, res: Response) => {
   try {
     const leadId = req.params.id;
+    const { payment_method } = req.body;
 
     const lead = await Lead.findById(leadId);
 
@@ -441,7 +442,10 @@ export const processPayment = async (req: Request, res: Response) => {
       status: "completed",
       date: new Date(),
     };
+
+    lead.selected;
     lead.status = "Payment Complete";
+    lead.selectedPaymentMethod = payment_method;
     await lead.save();
 
     res.status(200).json({ message: "Payment processed successfully", lead });

@@ -186,6 +186,7 @@ export const confirmMintpaymentTransaction = async (
     if (response.data.status === "APPROVED") {
       lead.payment.status = "completed";
       lead.payment.date = new Date();
+      lead.selectedPaymentMethod = "mintpay";
       await lead.save();
 
       return res.status(200).json({

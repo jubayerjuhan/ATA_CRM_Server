@@ -260,3 +260,57 @@ export const sendAcknowledgementEmail = async (req: Request, res: Response) => {
     console.error("Error sending email:", error);
   }
 };
+
+export const sendPaymentMethodSelectionEmail = async (
+  req: Request,
+  res: Response
+) => {
+  const { leadId } = req.body;
+
+  const lead = await Lead.findById(leadId);
+
+  if (!lead) {
+    return res.status(404).json({ message: "Lead not found" });
+  }
+
+  const emailData = {
+    sender: {
+      name: "Airways Travel",
+      email: "info@airwaystravel.com.au",
+    },
+    to: [
+      {
+        email: lead?.email,
+        name: lead?.firstName,
+      },
+    ],
+    cc: [
+      {
+        email: "support@airwaystravel.com.au",
+      },
+    ],
+    subject: `Payment Method Selection - ${lead?.booking_id}`,
+    htmlContent: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <p style="color: #333;">Hello ${lead.firstName},</p>
+        <p style="color: #333;">We have received your payment method selection for booking ID <strong>${lead.booking_id}</strong>.</p>
+        <p style="color: #333;">Your selected payment method is <strong>${lead.selectedPaymentMethod}.</strong></p>
+        <p style="color: #333;">Thank you for choosing Us!</p>
+      </div>
+    `,
+  };
+
+  try {
+    await axios.post("https://api.brevo.com/v3/smtp/email", emailData, {
+      headers: {
+        accept: "application/json",
+        "api-key": API_KEY,
+        "content-type": "application/json",
+      },
+    });
+
+    res.status(200).json({ message: "Email sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to send email", error });
+  }
+};

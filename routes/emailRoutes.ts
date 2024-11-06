@@ -3,6 +3,7 @@ import { checkRole } from "../middlewares";
 import {
   sendAcknowledgementEmail,
   sendEmail,
+  sendPaymentMethodSelectionEmail,
 } from "../controllers/EmailController";
 
 import multer from "multer";
@@ -17,6 +18,10 @@ const router: Router = Router();
 router
   .route("/send-email")
   .post(checkRole(["admin", "agent"]), upload.array("ticket", 50), sendEmail);
+router
+  .route("/send-payment-method-selection-email")
+  .post(checkRole(["admin", "agent"]), sendPaymentMethodSelectionEmail);
+
 router
   .route("/send-acknowledgement-email")
   .post(
