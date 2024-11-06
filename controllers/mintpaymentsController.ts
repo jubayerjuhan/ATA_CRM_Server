@@ -121,6 +121,15 @@ export const processTo3DSPage = async (req: Request, res: Response) => {
       }
     );
 
+    if (
+      response.data.purchase.status === "DECLINED" ||
+      !response.data.customer?.authentication_redirect_url
+    ) {
+      return res.status(400).json({
+        success: false,
+        message: response.data.response_message,
+      });
+    }
     console.log(response, "response from the mintpay....");
 
     lead.purchase_reference = response.data.purchase.purchase_reference;
