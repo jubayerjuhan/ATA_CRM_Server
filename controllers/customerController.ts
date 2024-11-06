@@ -322,16 +322,14 @@ export const getCustomersByDate = async (
     // also see how many followups I have on that day
     const totalFollowUps = await Lead.find({
       follow_up_date: {
-        $gte: start.toDate(),
-        $lte: end.toDate(),
+        $gte: Date.now(),
       },
     });
 
     // my followups
     const myFollowups = await Lead.find({
       follow_up_date: {
-        $gte: start.toDate(),
-        $lte: end.toDate(),
+        $gte: Date.now(),
       },
       claimed_by: req.user?._id as string,
     });
