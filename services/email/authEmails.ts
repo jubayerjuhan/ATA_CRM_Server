@@ -24,7 +24,7 @@ export const sendPasswordResetEmail = async (
     ],
     cc: [
       {
-        email: "tech@airwaystravel.com.au",
+        email: "support@airwaystravel.com.au",
       },
     ],
     subject: "Password Reset Request",

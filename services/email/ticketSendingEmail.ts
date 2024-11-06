@@ -18,7 +18,7 @@ export const ticketSendingEmail = async (
 
   const data = {
     to: [{ email }],
-    bcc: [{ email: "tech@airwaystravel.com.au" }],
+    bcc: [{ email: "support@airwaystravel.com.au" }],
     templateId: 13, // Replace with your actual template ID
     params: {
       name: lead.firstName,

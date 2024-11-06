@@ -80,7 +80,7 @@ export const sendEmail = async (req: Request, res: Response) => {
     ],
     cc: [
       {
-        email: "tech@airwaystravel.com.au",
+        email: "support@airwaystravel.com.au",
       },
     ],
     subject: subject,
