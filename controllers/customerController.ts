@@ -354,6 +354,7 @@ export const getCustomersByDate = async (
     // loop through the leads and please make the sum of the total amount quoted_amount.total
     let totalAmount = 0;
 
+    console.log(req.user?.role, "Total Followups");
     if (req.user?.role === "admin") {
       // Return the filtered leads
       return res.status(200).json({
