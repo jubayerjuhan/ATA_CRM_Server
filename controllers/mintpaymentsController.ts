@@ -121,6 +121,8 @@ export const processTo3DSPage = async (req: Request, res: Response) => {
       }
     );
 
+    console.log(response, "response from the mintpay....");
+
     lead.purchase_reference = response.data.purchase.purchase_reference;
     await lead.save();
 
