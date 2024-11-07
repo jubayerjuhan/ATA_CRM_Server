@@ -70,7 +70,7 @@ export const sendEmail = async (req: Request, res: Response) => {
   const emailData = {
     sender: {
       name: "Airways Travel",
-      email: "info@airwaystravel.com.au",
+      email: "support@airwaystravel.com.au",
     },
     to: [
       {
@@ -206,7 +206,7 @@ export const sendAcknowledgementEmail = async (req: Request, res: Response) => {
   const emailData = {
     sender: {
       name: "Airways Travel",
-      email: "info@airwaystravel.com.au",
+      email: "support@airwaystravel.com.au",
     },
     to: [
       {
@@ -216,7 +216,7 @@ export const sendAcknowledgementEmail = async (req: Request, res: Response) => {
     ],
     cc: [
       {
-        email: "info@airwaystravel.com.au",
+        email: "support@airwaystravel.com.au",
       },
     ],
     subject: `Booking Acknowledgement - ${lead?.booking_id}`,
@@ -226,7 +226,7 @@ export const sendAcknowledgementEmail = async (req: Request, res: Response) => {
   // const notificationEmailData = {
   //   sender: {
   //     name: "Airways Travel",
-  //     email: "info@airwaystravel.com.au",
+  //     email: "support@airwaystravel.com.au",
   //   },
   //   to: [
   //     {
@@ -276,7 +276,7 @@ export const sendPaymentMethodSelectionEmail = async (
   const emailData = {
     sender: {
       name: "Airways Travel",
-      email: "info@airwaystravel.com.au",
+      email: "support@airwaystravel.com.au",
     },
     to: [
       {
