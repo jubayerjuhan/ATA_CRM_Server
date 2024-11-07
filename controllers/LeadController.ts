@@ -333,6 +333,7 @@ export const getMyOngoingList = async (
     const leads = await Lead.find({
       claimed_by: userId,
       converted: false,
+      status: { $ne: "Sale Lost" },
     })
       .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
       .populate("call_logs.added_by departure arrival airline claimed_by");

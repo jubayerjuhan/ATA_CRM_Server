@@ -1,5 +1,6 @@
 import { Router, Request, Response } from "express";
 import {
+  deleteFollowUp,
   getMyFollowUps,
   getTotalFollowUps,
 } from "../controllers/FollowupController";
@@ -13,5 +14,6 @@ router
   .route("/my-follow-ups")
   .get(checkRole(["admin", "agent"]), getMyFollowUps);
 router.route("/").get(checkRole(["admin"]), getTotalFollowUps);
+router.route("/:id").delete(checkRole(["admin", "agent"]), deleteFollowUp);
 
 export default router;

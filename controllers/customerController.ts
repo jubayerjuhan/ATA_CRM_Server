@@ -61,7 +61,29 @@ export const getUniqueCustomers = async (
   req: AuthorizedRequest,
   res: Response
 ) => {
-  const allLeads = await Lead.find().sort({ createdAt: 1 }).populate("arrival"); // Sort by creation date
+  const { startDate, endDate } = req.query;
+  let start, end;
+
+  if (startDate && endDate) {
+    start = moment(startDate as string, moment.ISO_8601, true).startOf("day");
+    end = moment(endDate as string, moment.ISO_8601, true).endOf("day");
+
+    if (!start.isValid() || !end.isValid()) {
+      return res.status(400).json({ message: "Invalid date format" });
+    }
+  } else {
+    start = moment().startOf("month");
+    end = moment().endOf("month");
+  }
+
+  const allLeads = await Lead.find({
+    createdAt: {
+      $gte: start.toDate(),
+      $lte: end.toDate(),
+    },
+  })
+    .sort({ createdAt: 1 })
+    .populate("arrival departure"); // Sort by creation date
 
   const customerMap = new Map<string, any>();
 
@@ -322,14 +344,14 @@ export const getCustomersByDate = async (
     // also see how many followups I have on that day
     const totalFollowUps = await Lead.find({
       follow_up_date: {
-        $gte: Date.now(),
+        $ne: null,
       },
     });
 
     // my followups
     const myFollowups = await Lead.find({
       follow_up_date: {
-        $gte: Date.now(),
+        $ne: null,
       },
       claimed_by: req.user?._id as string,
     });
