@@ -283,6 +283,26 @@ export const getCustomersByDate = async (
       },
     });
 
+    const inProgressLeads = await Lead.find({
+      createdAt: {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+      status: {
+        $in: ["In Progress", "Payment Complete", "Itenary Email Sent"],
+      },
+    });
+    const userInProgressLeads = await Lead.find({
+      createdAt: {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+      status: {
+        $in: ["In Progress", "Payment Complete", "Itenary Email Sent"],
+      },
+      claimed_by: req.user?._id as string,
+    });
+
     const totalConvertedLeads = await Lead.find({
       "payment.date": {
         $gte: start.toDate(),
@@ -290,6 +310,8 @@ export const getCustomersByDate = async (
       },
       converted: true,
     });
+
+    console.log(totalConvertedLeads, "Total Converted Leads");
 
     const totalConvertedLeadsByUser = await Lead.find({
       "payment.date": {
@@ -387,6 +409,7 @@ export const getCustomersByDate = async (
         myFollowups: myFollowups.length,
         monthlyConvertedLeads: monthlyConvertedLeadsCount,
         totalTicketByUser,
+        inProgressLeads: inProgressLeads.length,
       });
     }
 
@@ -398,6 +421,7 @@ export const getCustomersByDate = async (
       myFollowups: myFollowups.length,
       totalConvertedLeadsByUser: totalConvertedLeadsByUser.length,
       totalTicketByUser,
+      inProgressLeads: userInProgressLeads.length,
     });
   } catch (error) {
     console.error("Error fetching leads:", error);
