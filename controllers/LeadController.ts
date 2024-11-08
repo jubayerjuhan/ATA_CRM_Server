@@ -25,8 +25,17 @@ const generateBookingId = async (): Promise<string> => {
 export const addLead = async (req: AuthorizedRequest, res: Response) => {
   try {
     const booking_id = await generateBookingId();
-
     const leadDataFromBody = req.body;
+
+    const { email } = leadDataFromBody;
+    const existingLead = await Lead.findOne({ email, status: "In Progress" });
+
+    if (existingLead) {
+      return res.status(400).json({
+        message: "A lead with this email is already in progress",
+        lead: existingLead,
+      });
+    }
 
     let leadData = { ...leadDataFromBody, caseDate: new Date(), booking_id };
 
