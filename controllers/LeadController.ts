@@ -28,11 +28,16 @@ export const addLead = async (req: AuthorizedRequest, res: Response) => {
     const leadDataFromBody = req.body;
 
     const { email } = leadDataFromBody;
-    const existingLead = await Lead.findOne({ email, status: "In Progress" });
+    const existingLead = await Lead.findOne({
+      email,
+      status: {
+        $in: ["In Progress", "Itenary Email Sent", "Payment Complete"],
+      },
+    });
 
     if (existingLead) {
       return res.status(400).json({
-        message: "A lead with this email is already in progress",
+        message: "A lead with this email is already in pending status",
         lead: existingLead,
       });
     }

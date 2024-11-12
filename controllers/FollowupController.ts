@@ -7,7 +7,7 @@ export const getMyFollowUps = async (req: AuthorizedRequest, res: Response) => {
     const myFollowups = await Lead.find({
       follow_up_date: { $exists: true, $ne: null },
       claimed_by: req.user?._id as string,
-    });
+    }).populate("claimed_by departure arrival airline");
 
     const myFollowupsWithLateStatus = myFollowups.map((followup) => {
       const isLate = new Date(followup.follow_up_date) < new Date();
