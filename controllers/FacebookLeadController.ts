@@ -79,3 +79,22 @@ export const deleteFacebookLead = async (
     res.status(500).json({ message: "Error deleting lead", error });
   }
 };
+
+// mark as added
+export const markFacebookLeadAsAdded = async (
+  req: AuthorizedRequest,
+  res: Response
+): Promise<void> => {
+  try {
+    const lead = await FacebookLead.findByIdAndUpdate(req.params.id, {
+      added: true,
+    });
+    if (!lead) {
+      res.status(404).json({ message: "Lead not found" });
+      return;
+    }
+    res.status(200).json({ message: "Lead marked as added" });
+  } catch (error) {
+    res.status(500).json({ message: "Error marking lead as added", error });
+  }
+};

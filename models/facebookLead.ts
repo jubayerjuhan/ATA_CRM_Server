@@ -5,7 +5,7 @@ interface IFacebookLead extends Document {
   lastName: string;
   phone: string;
   email: string;
-  added_by: string;
+  added: boolean;
 }
 
 const FacebookLeadSchema = new Schema<IFacebookLead>({
@@ -13,6 +13,7 @@ const FacebookLeadSchema = new Schema<IFacebookLead>({
   lastName: { type: String, required: true },
   phone: { type: String, required: true },
   email: { type: String, required: true },
+  added: { type: Boolean, default: false },
   // added_by: {
   //   type: Schema.Types.String,
   //   ref: "User",
