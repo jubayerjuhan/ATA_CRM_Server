@@ -33,7 +33,7 @@ export const sendEmail = async (req: Request, res: Response) => {
   const subject =
     emailType === "itinerary"
       ? `Your Itinerary - Booking ID - ${lead?.booking_id}`
-      : `Your Ticket - Booking ID - ${lead?.booking_id}`;
+      : `Your e-Ticket - Booking ID - ${lead?.booking_id}`;
 
   // lead status
   const status =
@@ -47,7 +47,7 @@ export const sendEmail = async (req: Request, res: Response) => {
         (url, index) => `
       <div style="margin: 10px 0;">
         <a href="${url}" target="_blank" style="background-color: #4CAF50; color: white; padding: 10px 20px; text-align: center; text-decoration: none; display: inline-block; font-size: 16px; margin: 4px 2px; cursor: pointer; border-radius: 5px;">
-          View Ticket ${index + 1}
+          View e-Ticket ${index + 1}
         </a>
       </div>
     `
@@ -56,8 +56,8 @@ export const sendEmail = async (req: Request, res: Response) => {
 
     const ticketSection = `
       <div style="margin-top: 20px; padding: 20px; background-color: #f8f8f8; border-radius: 5px;">
-        <h2 style="color: #333;">Your Tickets</h2>
-        <p>Here are your tickets. Click on each button to view or download:</p>
+        <h2 style="color: #333;">Your e-Tickets</h2>
+        <p>Here are your e-tickets. Click on each button to view or download:</p>
         ${ticketButtons}
       </div>
     `;
