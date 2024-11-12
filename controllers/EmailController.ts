@@ -55,11 +55,97 @@ export const sendEmail = async (req: Request, res: Response) => {
       .join("");
 
     const ticketSection = `
+    <div>
       <div style="margin-top: 20px; padding: 20px; background-color: #f8f8f8; border-radius: 5px;">
-        <h2 style="color: #333;">Your e-Tickets</h2>
-        <p>Here are your e-tickets. Click on each button to view or download:</p>
-        ${ticketButtons}
+      <h2 style="color: #333;">Your e-Tickets</h2>
+      <p>Here are your e-tickets. Click on each button to view or download:</p>
+      ${ticketButtons}
       </div>
+      <div
+  style="
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    color: #333;
+  "
+>
+  <div
+    style="
+      text-align: left;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    "
+  >
+    <img
+      src="https://i.ibb.co.com/rvdQZqt/unnamed-6.png"
+      alt="Airways travel Logo"
+      style="
+        width: 150px;
+        height: 150px;
+        max-height: 150px;
+        max-width: 150px;
+        margin-right: 15px;
+        object-fit: contain;
+      "
+    />
+    <div>
+      <h2 style="margin: 0; color: #990000">Airways Travel</h2>
+      <p style="margin: 0; color: #666">Airways Travel, Excellence in Travel</p>
+    </div>
+  </div>
+  <div style="clear: both; padding-top: 20px; color: #333">
+    <p style="margin: 0; line-height: 24px">
+      <strong>Phone:</strong> 03 9041 3975 &nbsp;&nbsp;
+      <strong>WhatsApp:</strong> 0432 936 702<br />
+      <strong>Website:</strong>
+      <a
+        href="https://airwaystravel.com.au"
+        style="color: #990000; text-decoration: none"
+        >airwaystravel.com.au</a
+      >
+      &nbsp;&nbsp; <strong>Email:</strong>
+      <a
+        href="mailto:admin@airwaystravel.com.au"
+        style="color: #990000; text-decoration: none"
+        >admin@airwaystravel.com.au</a
+      ><br />
+      <strong>Address:</strong> 8 Tallis Cct, Truganina VIC 3029
+    </p>
+  </div>
+  <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0" />
+  <img
+    src="https://i.ibb.co.com/vDJMqLW/unnamed-7.png"
+    alt="Banner Image"
+    style="width: 100%; border-radius: 10px"
+  />
+  <div style="text-align: left; margin-top: 20px">
+    <p style="font-size: 12px; color: #999">
+      IMPORTANT: The contents of this email and any attachments are
+      confidential. They are intended for the named recipient(s) only. If you
+      have received this email by mistake, please notify the sender immediately
+      and do not disclose the contents to anyone or make copies thereof.
+    </p>
+    <div style="margin-top: 20px">
+      <a
+        href="https://airwaystravel.com.au"
+        style="text-decoration: none; color: #333; font-size: 13px"
+      >
+        ⭐ How did we do? <span style="color: #990000">Give us a review</span>
+      </a>
+      <br />
+      <a
+        href="https://airwaystravel.com.au"
+        style="text-decoration: none; color: #333; font-size: 13px"
+      >
+        📧 Subscribe Now!
+        <span style="color: #990000">Don’t miss a bargain</span>
+      </a>
+    </div>
+  </div>
+</div>
+    </div>
     `;
 
     updatedHtmlContent = `${htmlContent}${ticketSection}`;
@@ -175,12 +261,99 @@ const uploadTicket = async (
 
 const userAcknowledgementEmail = (lead: any) => {
   return `
+  <div>
+  </div>
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <p style="color: #333;">Hello ${lead.firstName},</p>
       <p style="color: #333;">Your booking ID <strong>${lead.booking_id}</strong> has been acknowledged.</p>
       <p style="color: #333;">We will keep you updated on the progress of your request.</p>
       <p style="color: #333;">Thank you for choosing Us!</p>
     </div>
+    <div
+  style="
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    color: #333;
+  "
+>
+  <div
+    style="
+      text-align: left;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    "
+  >
+    <img
+      src="https://i.ibb.co.com/rvdQZqt/unnamed-6.png"
+      alt="Airways travel Logo"
+      style="
+        width: 150px;
+        height: 150px;
+        max-height: 150px;
+        max-width: 150px;
+        margin-right: 15px;
+        object-fit: contain;
+      "
+    />
+    <div>
+      <h2 style="margin: 0; color: #990000">Airways Travel</h2>
+      <p style="margin: 0; color: #666">Airways Travel, Excellence in Travel</p>
+    </div>
+  </div>
+  <div style="clear: both; padding-top: 20px; color: #333">
+    <p style="margin: 0; line-height: 24px">
+      <strong>Phone:</strong> 03 9041 3975 &nbsp;&nbsp;
+      <strong>WhatsApp:</strong> 0432 936 702<br />
+      <strong>Website:</strong>
+      <a
+        href="https://airwaystravel.com.au"
+        style="color: #990000; text-decoration: none"
+        >airwaystravel.com.au</a
+      >
+      &nbsp;&nbsp; <strong>Email:</strong>
+      <a
+        href="mailto:admin@airwaystravel.com.au"
+        style="color: #990000; text-decoration: none"
+        >admin@airwaystravel.com.au</a
+      ><br />
+      <strong>Address:</strong> 8 Tallis Cct, Truganina VIC 3029
+    </p>
+  </div>
+  <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0" />
+  <img
+    src="https://i.ibb.co.com/vDJMqLW/unnamed-7.png"
+    alt="Banner Image"
+    style="width: 100%; border-radius: 10px"
+  />
+  <div style="text-align: left; margin-top: 20px">
+    <p style="font-size: 12px; color: #999">
+      IMPORTANT: The contents of this email and any attachments are
+      confidential. They are intended for the named recipient(s) only. If you
+      have received this email by mistake, please notify the sender immediately
+      and do not disclose the contents to anyone or make copies thereof.
+    </p>
+    <div style="margin-top: 20px">
+      <a
+        href="https://airwaystravel.com.au"
+        style="text-decoration: none; color: #333; font-size: 13px"
+      >
+        ⭐ How did we do? <span style="color: #990000">Give us a review</span>
+      </a>
+      <br />
+      <a
+        href="https://airwaystravel.com.au"
+        style="text-decoration: none; color: #333; font-size: 13px"
+      >
+        📧 Subscribe Now!
+        <span style="color: #990000">Don’t miss a bargain</span>
+      </a>
+    </div>
+  </div>
+</div>
+</div>
   `;
 };
 
@@ -291,12 +464,99 @@ export const sendPaymentMethodSelectionEmail = async (
     ],
     subject: `Payment Method Selection - ${lead?.booking_id}`,
     htmlContent: `
+    <div>
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
         <p style="color: #333;">Hello ${lead.firstName},</p>
         <p style="color: #333;">We have received your payment method selection for booking ID <strong>${lead.booking_id}</strong>.</p>
         <p style="color: #333;">Your selected payment method is <strong>${lead.selectedPaymentMethod}.</strong></p>
         <p style="color: #333;">Thank you for choosing Us!</p>
       </div>
+
+      <div
+  style="
+    font-family: Arial, sans-serif;
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+    color: #333;
+  "
+>
+  <div
+    style="
+      text-align: left;
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    "
+  >
+    <img
+      src="https://i.ibb.co.com/rvdQZqt/unnamed-6.png"
+      alt="Airways travel Logo"
+      style="
+        width: 150px;
+        height: 150px;
+        max-height: 150px;
+        max-width: 150px;
+        margin-right: 15px;
+        object-fit: contain;
+      "
+    />
+    <div>
+      <h2 style="margin: 0; color: #990000">Airways Travel</h2>
+      <p style="margin: 0; color: #666">Airways Travel, Excellence in Travel</p>
+    </div>
+  </div>
+  <div style="clear: both; padding-top: 20px; color: #333">
+    <p style="margin: 0; line-height: 24px">
+      <strong>Phone:</strong> 03 9041 3975 &nbsp;&nbsp;
+      <strong>WhatsApp:</strong> 0432 936 702<br />
+      <strong>Website:</strong>
+      <a
+        href="https://airwaystravel.com.au"
+        style="color: #990000; text-decoration: none"
+        >airwaystravel.com.au</a
+      >
+      &nbsp;&nbsp; <strong>Email:</strong>
+      <a
+        href="mailto:admin@airwaystravel.com.au"
+        style="color: #990000; text-decoration: none"
+        >admin@airwaystravel.com.au</a
+      ><br />
+      <strong>Address:</strong> 8 Tallis Cct, Truganina VIC 3029
+    </p>
+  </div>
+  <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0" />
+  <img
+    src="https://i.ibb.co.com/vDJMqLW/unnamed-7.png"
+    alt="Banner Image"
+    style="width: 100%; border-radius: 10px"
+  />
+  <div style="text-align: left; margin-top: 20px">
+    <p style="font-size: 12px; color: #999">
+      IMPORTANT: The contents of this email and any attachments are
+      confidential. They are intended for the named recipient(s) only. If you
+      have received this email by mistake, please notify the sender immediately
+      and do not disclose the contents to anyone or make copies thereof.
+    </p>
+    <div style="margin-top: 20px">
+      <a
+        href="https://airwaystravel.com.au"
+        style="text-decoration: none; color: #333; font-size: 13px"
+      >
+        ⭐ How did we do? <span style="color: #990000">Give us a review</span>
+      </a>
+      <br />
+      <a
+        href="https://airwaystravel.com.au"
+        style="text-decoration: none; color: #333; font-size: 13px"
+      >
+        📧 Subscribe Now!
+        <span style="color: #990000">Don’t miss a bargain</span>
+      </a>
+    </div>
+  </div>
+</div>
+    </div>
     `,
   };
 
