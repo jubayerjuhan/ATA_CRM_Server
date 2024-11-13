@@ -32,7 +32,7 @@ export const sendEmail = async (req: Request, res: Response) => {
   const lead = await Lead.findById(leadId);
   const subject =
     emailType === "itinerary"
-      ? `Your Itinerary - Booking ID - ${lead?.booking_id}`
+      ? `Your Payment Link - Booking ID - ${lead?.booking_id}`
       : `Your e-Ticket - Booking ID - ${lead?.booking_id}`;
 
   // lead status
