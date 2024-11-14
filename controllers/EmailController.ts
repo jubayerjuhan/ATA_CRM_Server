@@ -60,7 +60,7 @@ export const sendEmail = async (req: Request, res: Response) => {
       <h2 style="color: #333;">Your E-Tickets</h2>
       <p>Here are your E-Tickets. Click on each button to view or download:</p>
       ${ticketButtons}
-       <p style="margin-left:auto; margin-bottom: 10px; line-height: 34px"><span style="color: rgb(85,85,85); margin-top: 10px">Regards,</span>&nbsp;<br/></p>
+      <p style="margin-left:auto; margin-bottom: 10px; line-height: 34px"><span style="color: rgb(85,85,85); margin-top: 10px">Regards,</span>&nbsp;<br/></p>
     <p style="margin-left:auto; margin-bottom: 10px; line-height: 34px"><span style="color: rgb(85,85,85); margin-top: 10px">Airways Travel </span>&nbsp;<br/></p>
     <p style="margin-left:auto; margin-bottom: 10px; line-height: 34px"><span style="color: rgb(85,85,85); margin-top: 10px">8 Tallis cct Truganina 3029 </span>&nbsp;<br/></p>
     <p style="margin-left:auto; margin-bottom: 10px; line-height: 34px"><span style="color: rgb(85,85,85); margin-top: 10px">Toll Free 1300051525 </span>&nbsp;<br/></p>
@@ -140,7 +140,73 @@ export const sendEmail = async (req: Request, res: Response) => {
     `;
   }
 
-  console.log("Sending email to:", updatedHtmlContent);
+  if (emailType === "itinerary") {
+    updatedHtmlContent = `
+    <div>
+    <style>
+    p{
+      line-height: 1.5;
+    }
+    </style>
+    <div>
+    ${htmlContent}
+      <div style="border-top: 1px solid #ccc; padding-top: 20px;">
+      <table cellpadding="0" cellspacing="0" border="0" style="width: 100%;">
+        <tr>
+          <td style="width: 150px; padding-right: 20px; border-right: 1px solid #ccc;">
+            <img src="https://i.ibb.co.com/djZKDYG/unnamed-6.png" alt="Airways Travel Logo" style="width: 150px; height: 150px;">
+          </td>
+          <td style="vertical-align: top; padding-left: 20px;">
+            <h2 style="color: #4a6ea9; margin: 0 0 10px;">Support Team</h2>
+            <p style="margin: 0 0 5px;">
+              <strong style="color: #4a6ea9;">Toll free</strong> 1300 051 525 <strong style="color: #4a6ea9;">Phone</strong> 03 9041 3975
+            </p>
+            <p style="margin: 0 0 5px;">
+              <strong style="color: #4a6ea9;">Whatsapp</strong> 0432 936 702
+            </p>
+            <p style="margin: 0 0 5px;">
+              <strong style="color: #4a6ea9;">Website</strong> www.airwaystravel.com.au
+            </p>
+            <p style="margin: 0 0 5px;">
+              <strong style="color: #4a6ea9;">Email</strong> support@airwaystravel.com.au
+            </p>
+            <p style="margin: 0 0 10px;">
+              <strong style="color: #4a6ea9;">Address</strong> 8 Tallis circuit Truganina Victoria 3029
+            </p>
+            <div>
+              <a href="#" style="text-decoration: none; margin-right: 10px;">
+                <img src="https://cdn4.iconfinder.com/data/icons/social-media-flat-7/64/Social-media_Tiktok-256.png" alt="TikTok" style="width: 24px; height: 24px;">
+              </a>
+              <a href="#" style="text-decoration: none; margin-right: 10px;">
+                <img src="https://cdn1.iconfinder.com/data/icons/logotypes/32/square-facebook-256.png" alt="Facebook" style="width: 24px; height: 24px;">
+              </a>
+              <a href="#" style="text-decoration: none; margin-right: 10px;">
+                <img src="https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Instagram-512.png" alt="Instagram" style="width: 24px; height: 24px;">
+              </a>
+              <a href="#" style="text-decoration: none; margin-right: 10px;">
+                <img src="https://cdn4.iconfinder.com/data/icons/social-media-black-white-2/1227/X-512.png" alt="X" style="width: 24px; height: 24px;">
+              </a>
+              <a href="#" style="text-decoration: none; margin-right: 10px;">
+                <img src="https://cdn2.iconfinder.com/data/icons/social-media-2285/512/1_Youtube_colored_svg-512.png" alt="YouTube" style="width: 24px; height: 24px;">
+              </a>
+              <a href="#" style="text-decoration: none;">
+                <img src="https://cdn2.iconfinder.com/data/icons/social-icons-33/128/Pinterest-512.png" alt="Pinterest" style="width: 24px; height: 24px;">
+              </a>
+            </div>
+          </td>
+        </tr>
+      </table>
+      <div style="margin-top: 20px; padding: 10px;">
+        <p style="margin: 0; font-family: Arial, sans-serif; font-size: 18px; line-height: 1.2;">
+          <span style="color: #ff0000; font-weight: bold;">NEW!</span>
+          <span style="color: #1BA2EB;"> Join our Facebook group for Exclusive deals! </span>
+          <a href="#" style="color: #ffffff; font-weight: bold; text-decoration: none;">GET NOW!</a>
+        </p>
+      </div>
+    </div>
+    </div>
+    </div>`;
+  }
 
   const emailData = {
     sender: {
