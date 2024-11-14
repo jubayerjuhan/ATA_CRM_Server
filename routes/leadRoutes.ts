@@ -54,7 +54,7 @@ router
 router
   .route("/:id/add-call-log")
   .put(checkRole(["admin", "agent"]), addCallLog);
-router.route("/:id").delete(deleteLead);
+router.route("/:id").delete(checkRole(["admin", "agent"]), deleteLead);
 
 // Route to get leads by a specific user
 router.route("/user/:userId").get(getLeadsByUser);
