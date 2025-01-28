@@ -33,6 +33,9 @@ export const checkRole = (allowedRoles: string[]) => {
         return res.status(404).json({ message: "User not found" });
       }
 
+      if (user.role === "leader") {
+        allowedRoles = [...allowedRoles, "leader"];
+      }
       if (!allowedRoles.includes(user.role)) {
         return res
           .status(403)

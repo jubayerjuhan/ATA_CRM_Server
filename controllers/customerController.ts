@@ -61,27 +61,7 @@ export const getUniqueCustomers = async (
   req: AuthorizedRequest,
   res: Response
 ) => {
-  const { startDate, endDate } = req.query;
-  let start, end;
-
-  if (startDate && endDate) {
-    start = moment(startDate as string, moment.ISO_8601, true).startOf("day");
-    end = moment(endDate as string, moment.ISO_8601, true).endOf("day");
-
-    if (!start.isValid() || !end.isValid()) {
-      return res.status(400).json({ message: "Invalid date format" });
-    }
-  } else {
-    start = moment().startOf("month");
-    end = moment().endOf("month");
-  }
-
-  const allLeads = await Lead.find({
-    createdAt: {
-      $gte: start.toDate(),
-      $lte: end.toDate(),
-    },
-  })
+  const allLeads = await Lead.find({})
     .sort({ createdAt: 1 })
     .populate("arrival departure"); // Sort by creation date
 
@@ -122,6 +102,7 @@ export const getUniqueCustomers = async (
   // Convert the Map to an array of values for the response
   const customerStats = Array.from(customerMap.values());
 
+  console.log(customerStats.length, "Customer Stats");
   res.status(200).json({
     message: "Customer Statistics Retrieved Successfully",
     customers: customerStats,
@@ -398,7 +379,7 @@ export const getCustomersByDate = async (
     let totalAmount = 0;
 
     console.log(req.user?.role, "Total Followups");
-    if (req.user?.role === "admin") {
+    if (req.user?.role === "admin" || req.user?.role === "leader") {
       // Return the filtered leads
       return res.status(200).json({
         message: "Leads retrieved successfully",
