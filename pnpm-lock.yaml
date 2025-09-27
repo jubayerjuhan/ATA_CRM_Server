@@ -114,6 +114,9 @@ importers:
         specifier: ^5.5.2
         version: 5.9.2
     devDependencies:
+      '@types/body-parser':
+        specifier: ^1.19.6
+        version: 1.19.6
       '@types/multer-s3':
         specifier: ^3.0.3
         version: 3.0.3
