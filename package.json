@@ -8,8 +8,8 @@
   "license": "ISC",
   "scripts": {
     "build": "tsc",
-    "start": "yarn build && node --inspect --max-old-space-size=4096 ./dist/server.js",
-    "dev": "yarn tsc -w & nodemon --inspect --max-old-space-size=4096 ./dist/server.js"
+    "start": "pnpm build && node --inspect --max-old-space-size=4096 ./dist/server.js",
+    "dev": "pnpm tsc -w & nodemon --inspect --max-old-space-size=4096 ./dist/server.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.662.0",

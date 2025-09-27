@@ -110,6 +110,162 @@ export const getUniqueCustomers = async (
   });
 };
 
+export const getUniqueCustomersPaginated = async (
+  req: AuthorizedRequest,
+  res: Response
+) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 100;
+    const search = req.query.search as string || "";
+    const sortBy = req.query.sortBy as string || "firstLead.createdAt";
+    const sortOrder = req.query.sortOrder as string || "desc";
+
+    const skip = (page - 1) * limit;
+
+    // Build search query for email, firstName, or lastName
+    const searchQuery = search
+      ? {
+          $or: [
+            { email: { $regex: search, $options: "i" } },
+            { firstName: { $regex: search, $options: "i" } },
+            { lastName: { $regex: search, $options: "i" } },
+          ],
+        }
+      : {};
+
+    // Aggregation pipeline to group by email and get customer statistics
+    const pipeline: any[] = [];
+
+    // Match leads with search criteria if provided
+    if (search) {
+      pipeline.push({ $match: searchQuery });
+    }
+
+    // Sort by creation date to ensure consistent grouping
+    pipeline.push({ $sort: { createdAt: 1 } });
+
+    // Group by email to get unique customers
+    pipeline.push({
+      $group: {
+        _id: "$email",
+        firstLead: { $first: "$$ROOT" },
+        latestLead: { $last: "$$ROOT" },
+        totalLeads: { $sum: 1 },
+        email: { $first: "$email" },
+        firstName: { $first: "$firstName" },
+        lastName: { $first: "$lastName" },
+      },
+    });
+
+    // Populate the departure and arrival fields for first and latest leads
+    pipeline.push({
+      $lookup: {
+        from: "airports",
+        localField: "firstLead.departure",
+        foreignField: "_id",
+        as: "firstLead.departure",
+      },
+    });
+
+    pipeline.push({
+      $lookup: {
+        from: "airports",
+        localField: "firstLead.arrival",
+        foreignField: "_id",
+        as: "firstLead.arrival",
+      },
+    });
+
+    pipeline.push({
+      $lookup: {
+        from: "airports",
+        localField: "latestLead.departure",
+        foreignField: "_id",
+        as: "latestLead.departure",
+      },
+    });
+
+    pipeline.push({
+      $lookup: {
+        from: "airports",
+        localField: "latestLead.arrival",
+        foreignField: "_id",
+        as: "latestLead.arrival",
+      },
+    });
+
+    // Unwind the arrays created by lookup
+    pipeline.push({
+      $addFields: {
+        "firstLead.departure": { $arrayElemAt: ["$firstLead.departure", 0] },
+        "firstLead.arrival": { $arrayElemAt: ["$firstLead.arrival", 0] },
+        "latestLead.departure": { $arrayElemAt: ["$latestLead.departure", 0] },
+        "latestLead.arrival": { $arrayElemAt: ["$latestLead.arrival", 0] },
+      },
+    });
+
+    // Add sorting field based on request
+    pipeline.push({
+      $addFields: {
+        sortField: {
+          $switch: {
+            branches: [
+              { case: { $eq: [sortBy, "firstLead.createdAt"] }, then: "$firstLead.createdAt" },
+              { case: { $eq: [sortBy, "latestLead.createdAt"] }, then: "$latestLead.createdAt" },
+              { case: { $eq: [sortBy, "totalLeads"] }, then: "$totalLeads" },
+              { case: { $eq: [sortBy, "email"] }, then: "$email" },
+              { case: { $eq: [sortBy, "firstName"] }, then: "$firstName" },
+            ],
+            default: "$firstLead.createdAt",
+          },
+        },
+      },
+    });
+
+    // Sort by the specified field
+    pipeline.push({ $sort: { sortField: sortOrder === "asc" ? 1 : -1 } });
+
+    // Remove the temporary sort field
+    pipeline.push({ $unset: "sortField" });
+
+    // Get total count for pagination
+    const totalCountPipeline = [...pipeline];
+    totalCountPipeline.push({ $count: "total" });
+    const totalCountResult = await Lead.aggregate(totalCountPipeline);
+    const totalCount = totalCountResult[0]?.total || 0;
+
+    // Add pagination to the main pipeline
+    const paginatedPipeline = [...pipeline];
+    paginatedPipeline.push({ $skip: skip });
+    paginatedPipeline.push({ $limit: limit });
+
+    // Execute the aggregation
+    const customers = await Lead.aggregate(paginatedPipeline);
+
+    const totalPages = Math.ceil(totalCount / limit);
+
+    res.status(200).json({
+      message: "Customer Statistics Retrieved Successfully",
+      customers,
+      pagination: {
+        currentPage: page,
+        totalPages,
+        totalCount,
+        hasNextPage: page < totalPages,
+        hasPrevPage: page > 1,
+        limit,
+      },
+    });
+  } catch (error) {
+    console.error("Error in getUniqueCustomersPaginated:", error);
+    res.status(500).json({
+      message: "Failed to retrieve customers",
+      error: error instanceof Error ? error.message : "Unknown error"
+    });
+  }
+};
+
 export const addQuotedAmount = async (req: Request, res: Response) => {
   const { quotedAmount } = req.body;
   const centAmount = Number(quotedAmount.total) * 100;

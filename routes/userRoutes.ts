@@ -5,6 +5,7 @@ import {
   deleteUser,
   getAllUsers,
   getUsersOverview,
+  getUsersOverviewOptimized,
 } from "../controllers/UserController";
 import { checkRole } from "../middlewares";
 
@@ -19,5 +20,9 @@ router
   .route("/overview-list")
   // .all(checkRole(["admin, user"]))
   .get(getUsersOverview);
+router
+  .route("/overview-list-optimized")
+  // .all(checkRole(["admin, user"]))
+  .get(getUsersOverviewOptimized);
 
 export default router;

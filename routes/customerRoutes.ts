@@ -9,6 +9,7 @@ import {
   getAllCustomers,
   getCustomersByDate,
   getUniqueCustomers,
+  getUniqueCustomersPaginated,
   sendItineraryEmailController,
   sendTicketEmail,
 } from "../controllers/customerController";
@@ -25,6 +26,9 @@ router.route("/").get(checkRole(["admin", "agent"]), getAllCustomers);
 router
   .route("/unique-customers")
   .get(checkRole(["admin", "agent"]), getUniqueCustomers);
+router
+  .route("/unique-customers-paginated")
+  .get(checkRole(["admin", "agent"]), getUniqueCustomersPaginated);
 router
   .route("/:id/add-quoted-amount")
   .put(checkRole(["admin", "agent"]), addQuotedAmount);
