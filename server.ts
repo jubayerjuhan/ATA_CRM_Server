@@ -1,7 +1,6 @@
 import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import bodyParser from "body-parser";
 
 // configuration imports
 import { connectDatabase } from "./config/database";
@@ -42,10 +41,10 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   if (req.originalUrl === "/webhook") {
     next();
   } else {
-    bodyParser.json()(req, res, next);
+    express.json()(req, res, next);
   }
 });
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.urlencoded({ extended: false }));
 
 console.log("Hey Juhan The Champ! Did You Took Your Med's?...");
 // connect the database
