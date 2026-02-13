@@ -4,6 +4,66 @@ import Lead from "../models/lead";
 import { sendTicketConfirmationEmail } from "../services";
 import { AuthorizedRequest } from "../types";
 
+const parsePositiveInt = (value: unknown, fallback: number) => {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+};
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
+const buildLeadSearchQuery = (searchRaw: unknown) => {
+  const search = String(searchRaw ?? "").trim();
+  if (!search) return null;
+  return [
+    { firstName: { $regex: search, $options: "i" } },
+    { lastName: { $regex: search, $options: "i" } },
+    { email: { $regex: search, $options: "i" } },
+    { phone: { $regex: search, $options: "i" } },
+    { booking_id: { $regex: search, $options: "i" } },
+    { pnr: { $regex: search, $options: "i" } },
+  ];
+};
+
+const leadListSelect = {
+  firstName: 1,
+  lastName: 1,
+  email: 1,
+  phone: 1,
+  status: 1,
+  createdAt: 1,
+  claimed_by: 1,
+  departure: 1,
+  arrival: 1,
+  airline: 1,
+  callFor: 1,
+  leadType: 1,
+  travelDate: 1,
+  returnDate: 1,
+  passengerType: 1,
+  adult: 1,
+  child: 1,
+  infant: 1,
+  payment: 1,
+  quoted_amount: 1,
+  booking_id: 1,
+  follow_up_date: 1,
+  cancelled: 1,
+  converted: 1,
+  ticket_sent: 1,
+  itenary_email_sent: 1,
+  call_logs: { $slice: -1 },
+};
+
+const leadListPopulate = [
+  { path: "claimed_by", select: "name email role" },
+  { path: "departure", select: "name city code" },
+  { path: "arrival", select: "name city code" },
+  { path: "airline", select: "name iata icao" },
+  { path: "call_logs.added_by", select: "name email" },
+];
+
 // Function to generate a unique booking ID
 const generateBookingId = async (): Promise<string> => {
   const lastLead = await Lead.findOne({})
@@ -61,13 +121,46 @@ export const addLead = async (req: AuthorizedRequest, res: Response) => {
 
 export const getUnclaimedLeads = async (req: Request, res: Response) => {
   try {
-    const unclaimedLeads = await Lead.find({ claimed_by: null })
-      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("departure arrival airline");
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = clamp(parsePositiveInt(req.query.limit, 50), 1, 200);
+    const all = String(req.query.all ?? "").toLowerCase() === "true";
+    const searchOr = buildLeadSearchQuery(req.query.search);
+
+    const query: Record<string, any> = { claimed_by: null };
+    if (searchOr) query.$or = searchOr;
+
+    const skip = (page - 1) * limit;
+    const [totalCount, unclaimedLeads] = await Promise.all([
+      Lead.countDocuments(query),
+      Lead.find(query)
+        .sort({ createdAt: -1 })
+        .skip(all ? 0 : skip)
+        .limit(all ? 0 : limit)
+        .select(leadListSelect as any)
+        .populate(leadListPopulate)
+        .lean(),
+    ]);
 
     res.status(200).json({
       message: "Successfully retrieved unclaimed leads",
       leads: unclaimedLeads,
+      pagination: all
+        ? {
+            currentPage: 1,
+            totalPages: 1,
+            totalCount,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: totalCount,
+          }
+        : {
+            currentPage: page,
+            totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+            totalCount,
+            hasNextPage: page * limit < totalCount,
+            hasPrevPage: page > 1,
+            limit,
+          },
     });
   } catch (error) {
     res
@@ -254,11 +347,47 @@ export const deleteLead = async (req: Request, res: Response) => {
 
 export const getAllLeads = async (req: Request, res: Response) => {
   try {
-    const leads = await Lead.find()
-      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("call_logs.added_by claimed_by departure arrival airline");
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = clamp(parsePositiveInt(req.query.limit, 50), 1, 200);
+    const all = String(req.query.all ?? "").toLowerCase() === "true";
+    const searchOr = buildLeadSearchQuery(req.query.search);
 
-    res.status(200).json({ message: "Successfully retrieved leads", leads });
+    const query: Record<string, any> = {};
+    if (searchOr) query.$or = searchOr;
+
+    const skip = (page - 1) * limit;
+    const [totalCount, leads] = await Promise.all([
+      Lead.countDocuments(query),
+      Lead.find(query)
+        .sort({ createdAt: -1 })
+        .skip(all ? 0 : skip)
+        .limit(all ? 0 : limit)
+        .select(leadListSelect as any)
+        .populate(leadListPopulate)
+        .lean(),
+    ]);
+
+    res.status(200).json({
+      message: "Successfully retrieved leads",
+      leads,
+      pagination: all
+        ? {
+            currentPage: 1,
+            totalPages: 1,
+            totalCount,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: totalCount,
+          }
+        : {
+            currentPage: page,
+            totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+            totalCount,
+            hasNextPage: page * limit < totalCount,
+            hasPrevPage: page > 1,
+            limit,
+          },
+    });
   } catch (error) {
     res.status(500).json({ message: "Failed to retrieve leads", error });
   }
@@ -266,13 +395,46 @@ export const getAllLeads = async (req: Request, res: Response) => {
 
 export const getAllConvertedLeads = async (req: Request, res: Response) => {
   try {
-    const convertedLeads = await Lead.find({ converted: true })
-      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("call_logs.added_by claimed_by departure arrival airline");
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = clamp(parsePositiveInt(req.query.limit, 50), 1, 200);
+    const all = String(req.query.all ?? "").toLowerCase() === "true";
+    const searchOr = buildLeadSearchQuery(req.query.search);
+
+    const query: Record<string, any> = { converted: true };
+    if (searchOr) query.$or = searchOr;
+
+    const skip = (page - 1) * limit;
+    const [totalCount, leads] = await Promise.all([
+      Lead.countDocuments(query),
+      Lead.find(query)
+        .sort({ createdAt: -1 })
+        .skip(all ? 0 : skip)
+        .limit(all ? 0 : limit)
+        .select(leadListSelect as any)
+        .populate(leadListPopulate)
+        .lean(),
+    ]);
 
     res.status(200).json({
       message: "Successfully retrieved converted leads",
-      leads: convertedLeads,
+      leads,
+      pagination: all
+        ? {
+            currentPage: 1,
+            totalPages: 1,
+            totalCount,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: totalCount,
+          }
+        : {
+            currentPage: page,
+            totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+            totalCount,
+            hasNextPage: page * limit < totalCount,
+            hasPrevPage: page > 1,
+            limit,
+          },
     });
   } catch (error) {
     res
@@ -284,13 +446,46 @@ export const getAllConvertedLeads = async (req: Request, res: Response) => {
 // get all cancelled leads
 export const getAllCancelledLeads = async (req: Request, res: Response) => {
   try {
-    const cancelledLeads = await Lead.find({ cancelled: true })
-      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("claimed_by departure arrival airline");
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = clamp(parsePositiveInt(req.query.limit, 50), 1, 200);
+    const all = String(req.query.all ?? "").toLowerCase() === "true";
+    const searchOr = buildLeadSearchQuery(req.query.search);
+
+    const query: Record<string, any> = { cancelled: true };
+    if (searchOr) query.$or = searchOr;
+
+    const skip = (page - 1) * limit;
+    const [totalCount, leads] = await Promise.all([
+      Lead.countDocuments(query),
+      Lead.find(query)
+        .sort({ createdAt: -1 })
+        .skip(all ? 0 : skip)
+        .limit(all ? 0 : limit)
+        .select(leadListSelect as any)
+        .populate(leadListPopulate.filter((p) => p.path !== "call_logs.added_by"))
+        .lean(),
+    ]);
 
     res.status(200).json({
-      message: "Successfully retrieved converted leads",
-      leads: cancelledLeads,
+      message: "Successfully retrieved cancelled leads",
+      leads,
+      pagination: all
+        ? {
+            currentPage: 1,
+            totalPages: 1,
+            totalCount,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: totalCount,
+          }
+        : {
+            currentPage: page,
+            totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+            totalCount,
+            hasNextPage: page * limit < totalCount,
+            hasPrevPage: page > 1,
+            limit,
+          },
     });
   } catch (error) {
     res
@@ -342,18 +537,51 @@ export const getMyOngoingList = async (
 ) => {
   try {
     const userId = req.user?._id;
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = clamp(parsePositiveInt(req.query.limit, 50), 1, 200);
+    const all = String(req.query.all ?? "").toLowerCase() === "true";
+    const searchOr = buildLeadSearchQuery(req.query.search);
 
-    console.log(userId, "userId");
-    const leads = await Lead.find({
+    const query: Record<string, any> = {
       claimed_by: userId,
       converted: false,
       status: { $ne: "Sale Lost" },
-    })
-      .sort({ createdAt: -1 }) // Sort by createdAt field in descending order
-      .populate("call_logs.added_by departure arrival airline claimed_by");
+    };
+    if (searchOr) query.$or = searchOr;
 
-    console.log(leads, "leads");
-    res.status(200).json({ message: "Successfully retrieved leads", leads });
+    const skip = (page - 1) * limit;
+    const [totalCount, leads] = await Promise.all([
+      Lead.countDocuments(query),
+      Lead.find(query)
+        .sort({ createdAt: -1 })
+        .skip(all ? 0 : skip)
+        .limit(all ? 0 : limit)
+        .select(leadListSelect as any)
+        .populate(leadListPopulate)
+        .lean(),
+    ]);
+
+    res.status(200).json({
+      message: "Successfully retrieved leads",
+      leads,
+      pagination: all
+        ? {
+            currentPage: 1,
+            totalPages: 1,
+            totalCount,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: totalCount,
+          }
+        : {
+            currentPage: page,
+            totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+            totalCount,
+            hasNextPage: page * limit < totalCount,
+            hasPrevPage: page > 1,
+            limit,
+          },
+    });
   } catch (error) {
     res.status(500).json({ message: "Failed to retrieve leads", error });
   }

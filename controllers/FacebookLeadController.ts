@@ -2,6 +2,15 @@ import { Request, Response } from "express";
 import FacebookLead from "../models/facebookLead";
 import { AuthorizedRequest } from "../types";
 
+const parsePositiveInt = (value: unknown, fallback: number) => {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+};
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
 // Add a new lead
 export const addFacebookLead = async (
   req: AuthorizedRequest,
@@ -56,8 +65,52 @@ export const getAllFacebookLeads = async (
   res: Response
 ): Promise<void> => {
   try {
-    const leads = await FacebookLead.find();
-    res.status(200).json(leads);
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = clamp(parsePositiveInt(req.query.limit, 50), 1, 200);
+    const all = String(req.query.all ?? "").toLowerCase() === "true";
+    const search = String(req.query.search ?? "").trim();
+
+    const query: Record<string, any> = {};
+    if (search) {
+      query.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+    const [totalCount, leads] = await Promise.all([
+      FacebookLead.countDocuments(query),
+      FacebookLead.find(query)
+        .sort({ createdAt: -1 })
+        .skip(all ? 0 : skip)
+        .limit(all ? 0 : limit)
+        .lean(),
+    ]);
+
+    res.status(200).json({
+      message: "Successfully retrieved facebook leads",
+      leads,
+      pagination: all
+        ? {
+            currentPage: 1,
+            totalPages: 1,
+            totalCount,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: totalCount,
+          }
+        : {
+            currentPage: page,
+            totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+            totalCount,
+            hasNextPage: page * limit < totalCount,
+            hasPrevPage: page > 1,
+            limit,
+          },
+    });
   } catch (error) {
     res.status(500).json({ message: "Error fetching leads", error });
   }

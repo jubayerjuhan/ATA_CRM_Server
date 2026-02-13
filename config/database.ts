@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { enableMongooseQueryProfiler } from "../utils/performanceProfiler";
 
 export const connectDatabase = async () => {
   try {
@@ -13,6 +14,8 @@ export const connectDatabase = async () => {
     if (!databaseURI) {
       throw new Error("Database URI is not defined.");
     }
+
+    enableMongooseQueryProfiler();
 
     await mongoose.connect(databaseURI);
     console.log("Connected to the database:", databaseURI);

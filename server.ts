@@ -23,6 +23,10 @@ import {
 } from "./routes";
 // Error catcher middleware import
 import { errorCatcher } from "./utils/errorCatcher";
+import {
+  getRequestPerfSnapshot,
+  runWithRequestPerfContext,
+} from "./utils/performanceProfiler";
 
 // Create Express server
 const app = express();
@@ -45,6 +49,105 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   }
 });
 app.use(express.urlencoded({ extended: false }));
+
+const tableEndpointPrefixes = [
+  "/leads",
+  "/customers",
+  "/followups",
+  "/user/list",
+  "/whatsapp-leads",
+  "/facebook-leads",
+  "/refund",
+  "/form",
+];
+
+const isTableEndpoint = (path: string) =>
+  tableEndpointPrefixes.some((prefix) => path.startsWith(prefix));
+
+const getRowsReturned = (body: unknown): number | null => {
+  if (Array.isArray(body)) return body.length;
+  if (!body || typeof body !== "object") return null;
+
+  const candidates = [
+    "leads",
+    "customers",
+    "followups",
+    "totalFollowups",
+    "users",
+    "formFields",
+    "data",
+  ];
+
+  for (const key of candidates) {
+    const value = (body as Record<string, unknown>)[key];
+    if (Array.isArray(value)) return value.length;
+  }
+
+  return null;
+};
+
+app.use((req: Request, res: Response, next: NextFunction) => {
+  if (!isTableEndpoint(req.path)) {
+    next();
+    return;
+  }
+
+  runWithRequestPerfContext(() => {
+    const requestStartedAt = new Date();
+    const requestStartTime = process.hrtime.bigint();
+    let payloadBytes = 0;
+    let rowsReturned: number | null = null;
+
+    const originalJson = res.json.bind(res);
+    res.json = ((body: unknown) => {
+      try {
+        payloadBytes = Buffer.byteLength(JSON.stringify(body ?? {}), "utf-8");
+      } catch {
+        payloadBytes = 0;
+      }
+      rowsReturned = getRowsReturned(body);
+      return originalJson(body);
+    }) as typeof res.json;
+
+    const originalSend = res.send.bind(res);
+    res.send = ((body?: any) => {
+      if (payloadBytes === 0 && body !== undefined && body !== null) {
+        const bodyAsString =
+          typeof body === "string"
+            ? body
+            : Buffer.isBuffer(body)
+              ? body.toString("utf-8")
+              : JSON.stringify(body);
+        payloadBytes = Buffer.byteLength(bodyAsString, "utf-8");
+      }
+      return originalSend(body);
+    }) as typeof res.send;
+
+    res.on("finish", () => {
+      const requestEndTime = process.hrtime.bigint();
+      const totalMs = Number(requestEndTime - requestStartTime) / 1_000_000;
+      const snapshot = getRequestPerfSnapshot();
+      const requestEndedAt = new Date();
+      const queriesSummary =
+        snapshot?.dbQueries
+          .map(
+            (query) =>
+              `${query.model}.${query.operation}:${query.ms}ms(rows=${query.rows})`
+          )
+          .join(", ") ?? "none";
+
+      console.log(
+        `[PERF] ${req.method} ${req.originalUrl} start=${requestStartedAt.toISOString()} end=${requestEndedAt.toISOString()} totalMs=${totalMs.toFixed(
+          2
+        )} dbMs=${snapshot?.dbMs ?? 0} dbRows=${snapshot?.dbRows ?? 0} rowsReturned=${
+          rowsReturned ?? "n/a"
+        } payloadBytes=${payloadBytes} status=${res.statusCode} dbQueries=[${queriesSummary}]`
+      );
+    });
+
+    next();
+  });
+});
 
 console.log("Hey Juhan The Champ! Did You Took Your Med's?...");
 // connect the database

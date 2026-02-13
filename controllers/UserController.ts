@@ -11,21 +11,37 @@ export const getAllUsers = async (
   next: NextFunction
 ) => {
   try {
-    const users = await User.find();
+    // Avoid N+1 queries: compute lead counts in one aggregation and merge.
+    const [users, leadCounts] = await Promise.all([
+      User.find()
+        .select("name email role createdAt updatedAt")
+        .lean(),
+      Lead.aggregate([
+        {
+          $match: {
+            converted: false,
+            claimed_by: { $ne: null },
+          },
+        },
+        {
+          $group: {
+            _id: "$claimed_by",
+            leadsInProgress: { $sum: 1 },
+          },
+        },
+      ]),
+    ]);
 
-    const usersWithLeads = await Promise.all(
-      users.map(async (user) => {
-        const leads = await Lead.find({
-          claimed_by: user._id,
-          converted: false,
-        });
+    const countsByUserId = new Map<string, number>();
+    for (const row of leadCounts) {
+      if (!row?._id) continue;
+      countsByUserId.set(String(row._id), Number(row.leadsInProgress ?? 0));
+    }
 
-        return {
-          ...user.toObject(),
-          leadsInProgress: leads.length,
-        };
-      })
-    );
+    const usersWithLeads = users.map((user: any) => ({
+      ...user,
+      leadsInProgress: countsByUserId.get(String(user._id)) ?? 0,
+    }));
 
     res.status(200).json({
       status: "success",
