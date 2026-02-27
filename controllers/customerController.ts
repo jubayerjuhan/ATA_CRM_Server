@@ -36,20 +36,102 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 const parse = (html: any) => new JSDOM(html).window.document;
 
+const parsePositiveInt = (value: unknown, fallback: number) => {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+};
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
 export const getAllCustomers = async (
   req: AuthorizedRequest,
   res: Response
 ) => {
   try {
-    const customers = await Lead.find({
-      claimed_by: { $exists: true },
-    }).populate("claimed_by departure arrival airline");
-    const customersCount = customers.length;
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = clamp(parsePositiveInt(req.query.limit, 50), 1, 200);
+    const all = String(req.query.all ?? "").toLowerCase() === "true";
+    const search = String(req.query.search ?? "").trim();
+
+    // NOTE: `$exists: true` matches documents where claimed_by exists but is null.
+    // For the "customers" view, we only want claimed leads.
+    const query: Record<string, any> = {
+      claimed_by: { $ne: null },
+    };
+
+    if (search) {
+      query.$or = [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { email: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
+        { booking_id: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+    const [customersCount, customers] = await Promise.all([
+      Lead.countDocuments(query),
+      Lead.find(query)
+        .sort({ createdAt: -1 })
+        .skip(all ? 0 : skip)
+        .limit(all ? 0 : limit)
+        .select({
+          firstName: 1,
+          lastName: 1,
+          email: 1,
+          phone: 1,
+          status: 1,
+          createdAt: 1,
+          claimed_by: 1,
+          departure: 1,
+          arrival: 1,
+          airline: 1,
+          callFor: 1,
+          leadType: 1,
+          travelDate: 1,
+          returnDate: 1,
+          passengerType: 1,
+          adult: 1,
+          child: 1,
+          infant: 1,
+          payment: 1,
+          quoted_amount: 1,
+          booking_id: 1,
+          follow_up_date: 1,
+          call_logs: { $slice: -1 },
+        })
+        .populate("claimed_by", "name email role")
+        .populate("departure", "name city code")
+        .populate("arrival", "name city code")
+        .populate("airline", "name iata icao")
+        .populate("call_logs.added_by", "name email")
+        .lean(),
+    ]);
 
     res.status(200).json({
       message: "Customers Retrived Successfully",
       customers,
       customersCount,
+      pagination: all
+        ? {
+            currentPage: 1,
+            totalPages: 1,
+            totalCount: customersCount,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: customersCount,
+          }
+        : {
+            currentPage: page,
+            totalPages: Math.max(1, Math.ceil(customersCount / limit)),
+            totalCount: customersCount,
+            hasNextPage: page * limit < customersCount,
+            hasPrevPage: page > 1,
+            limit,
+          },
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to retrive customers", error });
@@ -413,153 +495,141 @@ export const getCustomersByDate = async (
       return res.status(400).json({ message: "Invalid date format" });
     }
 
-    // Query the leads where the payment date falls within the range
-    const totalLeads = await Lead.find({
-      createdAt: {
-        $gte: start.toDate(),
-        $lte: end.toDate(),
-      },
-    });
+    const userId = req.user?._id as string | undefined;
 
-    const inProgressLeads = await Lead.find({
+    const createdAtRange = {
       createdAt: {
         $gte: start.toDate(),
         $lte: end.toDate(),
       },
+    };
+
+    const paymentDateRange = {
+      "payment.date": {
+        $gte: start.toDate(),
+        $lte: end.toDate(),
+      },
+    };
+
+    const inProgressStatuses = {
       status: {
         $in: ["In Progress", "Payment Complete", "Itenary Email Sent"],
       },
-    });
-    const userInProgressLeads = await Lead.find({
-      createdAt: {
-        $gte: start.toDate(),
-        $lte: end.toDate(),
-      },
-      status: {
-        $in: ["In Progress", "Payment Complete", "Itenary Email Sent"],
-      },
-      claimed_by: req.user?._id as string,
-    });
+    };
 
-    const totalConvertedLeads = await Lead.find({
-      "payment.date": {
-        $gte: start.toDate(),
-        $lte: end.toDate(),
-      },
-      converted: true,
-    });
-
-    console.log(totalConvertedLeads, "Total Converted Leads");
-
-    const totalConvertedLeadsByUser = await Lead.find({
-      "payment.date": {
-        $gte: start.toDate(),
-        $lte: end.toDate(),
-      },
-      claimed_by: req.user?._id as string,
-      converted: true,
-    });
-
-    let totalTicketByUser = 0;
-    totalConvertedLeadsByUser.forEach((lead) => {
-      totalTicketByUser += lead.adult;
-      totalTicketByUser += lead.child;
-    });
-
-    const userConvertedLeads = await Lead.find({
-      "payment.date": {
-        $gte: start.toDate(),
-        $lte: end.toDate(),
-      },
-      claimed_by: req.user?._id as string,
-      converted: true,
-    });
-
-    const userLeads = await Lead.find({
-      createdAt: {
-        $gte: start.toDate(),
-        $lte: end.toDate(),
-      },
-      claimed_by: req.user?._id as string,
-    });
-
-    // Query the leads where the payment date falls within the range and status is cancelled
-    const totalLostLeads = await Lead.find({
-      createdAt: {
-        $gte: start.toDate(),
-        $lte: end.toDate(),
-      },
-      cancelled: true,
-    });
-
-    const userLostLeads = await Lead.find({
-      createdAt: {
-        $gte: start.toDate(),
-        $lte: end.toDate(),
-      },
-      claimed_by: req.user?._id as string,
-      cancelled: true,
-    });
-
-    // also see how many followups I have on that day
-    const totalFollowUps = await Lead.find({
-      follow_up_date: {
-        $ne: null,
-      },
-    });
-
-    // my followups
-    const myFollowups = await Lead.find({
-      follow_up_date: {
-        $ne: null,
-      },
-      claimed_by: req.user?._id as string,
-    });
-
-    // how many converted leads I have on this month from 1st to 30th
+    // Counts only; do not fetch full documents for dashboard cards.
+    // Run independent queries in parallel to minimize total wall time.
     const startOfMonth = moment().startOf("month").toDate();
     const endOfMonth = moment().endOf("month").toDate();
 
-    const monthlyConvertedLeads = await Lead.find({
-      createdAt: {
-        $gte: startOfMonth,
-        $lte: endOfMonth,
-      },
-      converted: true,
-    });
+    const [
+      totalLeadsCount,
+      inProgressLeadsCount,
+      userInProgressLeadsCount,
+      totalConvertedLeadsCount,
+      totalConvertedLeadsByUserCount,
+      totalTicketByUserAgg,
+      userLeadsCount,
+      totalLostLeadsCount,
+      userLostLeadsCount,
+      totalFollowUpsCount,
+      myFollowupsCount,
+      monthlyConvertedLeadsCount,
+    ] = await Promise.all([
+      Lead.countDocuments(createdAtRange),
+      Lead.countDocuments({ ...createdAtRange, ...inProgressStatuses }),
+      userId
+        ? Lead.countDocuments({
+            ...createdAtRange,
+            ...inProgressStatuses,
+            claimed_by: userId,
+          })
+        : Promise.resolve(0),
+      Lead.countDocuments({ ...paymentDateRange, converted: true }),
+      userId
+        ? Lead.countDocuments({
+            ...paymentDateRange,
+            claimed_by: userId,
+            converted: true,
+          })
+        : Promise.resolve(0),
+      // Ticket count is sum(adult + child) for converted leads by this user within range.
+      userId
+        ? Lead.aggregate([
+            {
+              $match: {
+                ...paymentDateRange,
+                claimed_by: userId,
+                converted: true,
+              },
+            },
+            {
+              $group: {
+                _id: null,
+                total: {
+                  $sum: {
+                    $add: [
+                      { $ifNull: ["$adult", 0] },
+                      { $ifNull: ["$child", 0] },
+                    ],
+                  },
+                },
+              },
+            },
+          ])
+        : Promise.resolve([]),
+      userId
+        ? Lead.countDocuments({ ...createdAtRange, claimed_by: userId })
+        : Promise.resolve(0),
+      Lead.countDocuments({ ...createdAtRange, cancelled: true }),
+      userId
+        ? Lead.countDocuments({
+            ...createdAtRange,
+            claimed_by: userId,
+            cancelled: true,
+          })
+        : Promise.resolve(0),
+      Lead.countDocuments({ follow_up_date: { $exists: true, $ne: null } }),
+      userId
+        ? Lead.countDocuments({
+            follow_up_date: { $exists: true, $ne: null },
+            claimed_by: userId,
+          })
+        : Promise.resolve(0),
+      Lead.countDocuments({
+        createdAt: { $gte: startOfMonth, $lte: endOfMonth },
+        converted: true,
+      }),
+    ]);
 
-    // Add the count of monthly converted leads to the response
-    const monthlyConvertedLeadsCount = monthlyConvertedLeads.length;
+    const totalTicketByUser =
+      Array.isArray(totalTicketByUserAgg) && totalTicketByUserAgg.length
+        ? Number(totalTicketByUserAgg[0]?.total ?? 0)
+        : 0;
 
-    // loop through the leads and please make the sum of the total amount quoted_amount.total
-    let totalAmount = 0;
-
-    console.log(req.user?.role, "Total Followups");
     if (req.user?.role === "admin" || req.user?.role === "leader") {
-      // Return the filtered leads
       return res.status(200).json({
         message: "Leads retrieved successfully",
-        leads: totalLeads.length,
-        convertedLeads: totalConvertedLeads.length,
-        totalConvertedLeadsByUser: totalConvertedLeadsByUser.length,
-        lostLeads: totalLostLeads.length,
-        followUps: totalFollowUps.length,
-        myFollowups: myFollowups.length,
+        leads: totalLeadsCount,
+        convertedLeads: totalConvertedLeadsCount,
+        totalConvertedLeadsByUser: totalConvertedLeadsByUserCount,
+        lostLeads: totalLostLeadsCount,
+        followUps: totalFollowUpsCount,
+        myFollowups: myFollowupsCount,
         monthlyConvertedLeads: monthlyConvertedLeadsCount,
         totalTicketByUser,
-        inProgressLeads: inProgressLeads.length,
+        inProgressLeads: inProgressLeadsCount,
       });
     }
 
-    // Return the filtered leads
     res.status(200).json({
       message: "Leads retrieved successfully",
-      leads: userLeads.length,
-      lostLeads: userLostLeads.length,
-      myFollowups: myFollowups.length,
-      totalConvertedLeadsByUser: totalConvertedLeadsByUser.length,
+      leads: userLeadsCount,
+      lostLeads: userLostLeadsCount,
+      myFollowups: myFollowupsCount,
+      totalConvertedLeadsByUser: totalConvertedLeadsByUserCount,
       totalTicketByUser,
-      inProgressLeads: userInProgressLeads.length,
+      inProgressLeads: userInProgressLeadsCount,
     });
   } catch (error) {
     console.error("Error fetching leads:", error);

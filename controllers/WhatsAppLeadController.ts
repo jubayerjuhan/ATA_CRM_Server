@@ -2,6 +2,15 @@ import { Request, Response } from "express";
 import WhatsAppLead from "../models/whatsappLead";
 import { AuthorizedRequest } from "../types";
 
+const parsePositiveInt = (value: unknown, fallback: number) => {
+  const parsed = Number.parseInt(String(value ?? ""), 10);
+  if (!Number.isFinite(parsed) || parsed <= 0) return fallback;
+  return parsed;
+};
+
+const clamp = (value: number, min: number, max: number) =>
+  Math.min(max, Math.max(min, value));
+
 // Controller to add a WhatsApp lead
 export const addWhatsAppLead = async (
   req: AuthorizedRequest,
@@ -76,10 +85,52 @@ export const addWhatsAppLeadWithNotes = async (
 // Controller to get all WhatsApp leads, sorted by latest added first
 export const getAllWhatsAppLeads = async (req: Request, res: Response) => {
   try {
-    const leads = await WhatsAppLead.find()
-      .sort({ createdAt: -1 })
-      .populate("added_by", "name email");
-    res.json(leads);
+    const page = parsePositiveInt(req.query.page, 1);
+    const limit = clamp(parsePositiveInt(req.query.limit, 50), 1, 200);
+    const all = String(req.query.all ?? "").toLowerCase() === "true";
+    const search = String(req.query.search ?? "").trim();
+
+    const query: Record<string, any> = {};
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { phone: { $regex: search, $options: "i" } },
+      ];
+    }
+
+    const skip = (page - 1) * limit;
+    const [totalCount, leads] = await Promise.all([
+      WhatsAppLead.countDocuments(query),
+      WhatsAppLead.find(query)
+        .sort({ createdAt: -1 })
+        .skip(all ? 0 : skip)
+        .limit(all ? 0 : limit)
+        .select({ name: 1, phone: 1, added_by: 1, createdAt: 1, notes: { $slice: -1 } })
+        .populate("added_by", "name email")
+        .lean(),
+    ]);
+
+    res.json({
+      message: "Successfully retrieved WhatsApp leads",
+      leads,
+      pagination: all
+        ? {
+            currentPage: 1,
+            totalPages: 1,
+            totalCount,
+            hasNextPage: false,
+            hasPrevPage: false,
+            limit: totalCount,
+          }
+        : {
+            currentPage: page,
+            totalPages: Math.max(1, Math.ceil(totalCount / limit)),
+            totalCount,
+            hasNextPage: page * limit < totalCount,
+            hasPrevPage: page > 1,
+            limit,
+          },
+    });
   } catch (err: any) {
     res.status(500).json({ error: err.message });
   }
